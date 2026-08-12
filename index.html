@@ -105,23 +105,22 @@ main{
 nav{
   flex-shrink:0;
   background:var(--navy-deep);
-  padding-bottom:var(--sab);
   z-index:50;
-  box-shadow:0 -6px 24px rgba(22,32,58,.18);
+  box-shadow:0 6px 20px rgba(22,32,58,.20);
 }
 .nav-inner{max-width:860px;margin:0 auto;display:flex}
 .tab{
   flex:1;min-width:0;
   background:none;border:none;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;gap:3px;
-  padding:9px 0 7px;
-  color:#7C87A6;
-  border-top:2px solid transparent;
+  padding:9px 0 8px;
+  color:#8C97B6;
+  border-bottom:2.5px solid transparent;
   transition:color .15s;
 }
-.tab svg{width:20px;height:20px;stroke-width:1.6}
-.tab span{font-size:8.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-family:var(--sans)}
-.tab.on{color:var(--gold-soft);border-top-color:var(--gold)}
+.tab svg{width:21px;height:21px;stroke-width:1.6}
+.tab span{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;font-family:var(--sans)}
+.tab.on{color:var(--gold-soft);border-bottom-color:var(--gold);background:rgba(255,255,255,.05)}
 
 /* ============ CARDS & TYPE ============ */
 .card{
@@ -288,10 +287,23 @@ input[type=range]::-webkit-slider-thumb{
   font-family:var(--sans);
 }
 .opt:active{transform:scale(.985)}
-.opt.correct{background:var(--green-pale);border-color:var(--green);color:#2E5540;font-weight:600}
-.opt.wrong{background:var(--red-pale);border-color:var(--red);color:#7A3335}
-.opt.reveal{border-color:var(--green);border-style:dashed}
-.opt:disabled{cursor:default}
+.opt.correct,.opt.reveal{
+  background:var(--green-pale);border-color:var(--green);border-left:3px solid var(--green);
+  color:#2E5540;font-weight:700;
+}
+.opt.correct::after{content:'　✓ Correct';color:var(--green);font-size:11.5px;letter-spacing:.1em;white-space:nowrap}
+/* Shown on the right answer after a wrong pick, so the correction is unmissable */
+.opt.reveal::after{content:'　← Answer';color:var(--green);font-size:11.5px;letter-spacing:.1em;white-space:nowrap}
+.opt.wrong{
+  background:var(--red-pale);border-color:var(--red);border-left:3px solid var(--red);
+  color:#7A3335;font-weight:700;
+}
+.opt.wrong::after{content:'　✕';color:var(--red);font-size:12px}
+.opt:disabled{cursor:default;opacity:1}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.opt.wrong{animation:shake .3s ease}
+@keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.025)}100%{transform:scale(1)}}
+.opt.correct{animation:pop .32s ease}
 
 /* ============ STAT (WPM) ============ */
 .stats{display:flex;gap:10px;margin-bottom:14px}
@@ -359,7 +371,7 @@ input[type=range]::-webkit-slider-thumb{
 }
 .listen-hint{
   flex-shrink:0;text-align:center;font-size:10.5px;color:var(--muted);
-  padding:7px 16px calc(8px);letter-spacing:.06em;
+  padding:7px 16px calc(8px + var(--sab));letter-spacing:.06em;
 }
 
 /* ============ CHAT (Roleplay) ============ */
@@ -378,7 +390,7 @@ input[type=range]::-webkit-slider-thumb{
 }
 .chat-input{
   flex-shrink:0;display:flex;gap:8px;align-items:flex-end;
-  padding:10px 16px calc(10px);
+  padding:10px 16px calc(10px + var(--sab));
   background:var(--bg);border-top:1px solid var(--line);
 }
 .chat-input textarea{flex:1;max-height:110px;min-height:46px;font-size:15px}
@@ -494,6 +506,18 @@ a{color:var(--gold);font-weight:600}
     </div>
   </div>
 </header>
+
+<nav>
+  <div class="nav-inner">
+    <button class="tab on" data-tab="topic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/></svg><span>Topic</span></button>
+    <button class="tab" data-tab="read"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10.4 4.9 8 4.5 5.5 4.5c-1 0-2 .1-2.5.3v13.4c.5-.2 1.5-.3 2.5-.3 2.5 0 4.9.4 6.5 2 1.6-1.6 4-2 6.5-2 1 0 2 .1 2.5.3V4.8c-.5-.2-1.5-.3-2.5-.3-2.5 0-4.9.4-6.5 2z"/><path d="M12 6.5V20"/></svg><span>Read</span></button>
+    <button class="tab" data-tab="listen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4.2 4.2 0 010 6M18 6.5a8 8 0 010 11"/></svg><span>Listen</span></button>
+    <button class="tab" data-tab="speech"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21"/></svg><span>Speech</span></button>
+    <button class="tab" data-tab="prep"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 114.1 1.9c-.8.7-1.6 1.2-1.6 2.4"/><circle cx="12" cy="16.8" r=".4" fill="currentColor"/></svg><span>PREP</span></button>
+    <button class="tab" data-tab="talk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 18l-4.5 3V6a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2z"/></svg><span>Talk</span></button>
+    <button class="tab" data-tab="write"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3.5l3.5 3.5L8 19.5 3.5 20.5 4.5 16z"/><path d="M14.5 6l3.5 3.5"/></svg><span>Write</span></button>
+  </div>
+</nav>
 
 <main>
 
@@ -691,17 +715,6 @@ a{color:var(--gold);font-weight:600}
 
 </main>
 
-<nav>
-  <div class="nav-inner">
-    <button class="tab on" data-tab="topic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/></svg><span>Topic</span></button>
-    <button class="tab" data-tab="read"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10.4 4.9 8 4.5 5.5 4.5c-1 0-2 .1-2.5.3v13.4c.5-.2 1.5-.3 2.5-.3 2.5 0 4.9.4 6.5 2 1.6-1.6 4-2 6.5-2 1 0 2 .1 2.5.3V4.8c-.5-.2-1.5-.3-2.5-.3-2.5 0-4.9.4-6.5 2z"/><path d="M12 6.5V20"/></svg><span>Read</span></button>
-    <button class="tab" data-tab="listen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4.2 4.2 0 010 6M18 6.5a8 8 0 010 11"/></svg><span>Listen</span></button>
-    <button class="tab" data-tab="speech"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21"/></svg><span>Speech</span></button>
-    <button class="tab" data-tab="prep"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 114.1 1.9c-.8.7-1.6 1.2-1.6 2.4"/><circle cx="12" cy="16.8" r=".4" fill="currentColor"/></svg><span>PREP</span></button>
-    <button class="tab" data-tab="talk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 18l-4.5 3V6a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2z"/></svg><span>Talk</span></button>
-    <button class="tab" data-tab="write"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3.5l3.5 3.5L8 19.5 3.5 20.5 4.5 16z"/><path d="M14.5 6l3.5 3.5"/></svg><span>Write</span></button>
-  </div>
-</nav>
 
 <div id="toast"></div>
 
@@ -835,17 +848,33 @@ function setInlineErr(id,msg){
   if(msg){el.textContent='⚠ '+msg;el.className='inline-alert'}
   else{el.className='hidden'}
 }
+// One shared context: iOS only unlocks audio inside a user gesture, and a
+// fresh AudioContext per tap eventually hits the per-page limit.
+let _ac=null;
 function playSound(kind){
   try{
     const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
-    const ctx=new AC(),o=ctx.createOscillator(),g=ctx.createGain();
-    if(kind==='correct'){o.type='sine';o.frequency.setValueAtTime(880,ctx.currentTime);o.frequency.setValueAtTime(1108.7,ctx.currentTime+.1);
-      g.gain.setValueAtTime(.22,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.01,ctx.currentTime+.4);
-      o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.4);}
-    else{o.type='square';o.frequency.setValueAtTime(150,ctx.currentTime);
-      g.gain.setValueAtTime(0,ctx.currentTime);g.gain.linearRampToValueAtTime(.1,ctx.currentTime+.02);g.gain.linearRampToValueAtTime(0,ctx.currentTime+.45);
-      o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.5);}
-    setTimeout(()=>{try{ctx.close()}catch(e){}},800);
+    if(!_ac)_ac=new AC();
+    if(_ac.state==='suspended')_ac.resume();
+    const ctx=_ac,t0=ctx.currentTime;
+    const tone=(freq,start,dur,type,peak)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type=type;o.frequency.setValueAtTime(freq,t0+start);
+      g.gain.setValueAtTime(0,t0+start);
+      g.gain.linearRampToValueAtTime(peak,t0+start+.015);
+      g.gain.exponentialRampToValueAtTime(.0001,t0+start+dur);
+      o.connect(g);g.connect(ctx.destination);
+      o.start(t0+start);o.stop(t0+start+dur+.02);
+    };
+    if(kind==='correct'){
+      // ピンポン: two clear bell tones, high then higher
+      tone(988,0,.28,'sine',.30);    // B5
+      tone(1319,.16,.42,'sine',.26); // E6
+    }else{
+      // ブブー: two low buzzes
+      tone(196,0,.18,'square',.14);
+      tone(155,.22,.34,'square',.14);
+    }
   }catch(e){}
 }
 function setBusy(btnSel,labelSel,busyText,idleText,busy){
@@ -871,7 +900,7 @@ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{
 },400)}
 
 /* ---------- Gemini API ---------- */
-const APP_VERSION='2026.08.12-5';
+const APP_VERSION='2026.08.12-6';
 // Google retires model ids on its own schedule, and a retired id 404s for
 // newly-created keys well before the published shutdown date. So these are
 // only starting points: discoverModels() asks the key what it can actually
@@ -1040,7 +1069,13 @@ async function regenTopic(i,btn){
     if(r.topic){S.topics[i]=r.topic;save();renderTopics();toast(DAYS[i]+'のお題を作り直しました')}
   }catch(e){toast(e.message,'err');btn.disabled=false;btn.textContent='変更'}
 }
-const ARTICLE_JSON_SPEC=`出力は以下のJSON形式に厳密に従ってください: { "english": "本文", "japanese": "日本語訳", "vocabulary": "この英文の重要単語、重要イディオムの解説（日本語で箇条書き）", "grammar": "文法解説（日本語で箇条書き）", "quiz": [{ "question": "英語の内容理解問題1", "options": ["選択肢1","選択肢2","選択肢3","選択肢4","選択肢5"], "answer": 0 }, { "question": "問題2", "options": ["選択肢1","選択肢2","選択肢3","選択肢4","選択肢5"], "answer": 1 }, { "question": "問題3", "options": ["選択肢1","選択肢2","選択肢3","選択肢4","選択肢5"], "answer": 2 }] } (必ずクイズは3問作成してください)`;
+const ARTICLE_JSON_SPEC=`出力は以下のJSON形式に厳密に従ってください: { "english": "本文", "japanese": "日本語訳", "vocabulary": "この英文の重要単語、重要イディオムの解説（日本語で箇条書き）", "grammar": "文法解説（日本語で箇条書き）", "quiz": [{ "question": "...", "options": ["...","...","...","...","..."], "answer": 0 }, { "question": "...", "options": ["...","...","...","...","..."], "answer": 1 }, { "question": "...", "options": ["...","...","...","...","..."], "answer": 2 }] }
+クイズの条件（厳守）:
+・必ず3問作成する
+・**quizのquestionとoptionsは必ず英語で書くこと。日本語を一切含めないこと。**（vocabularyとgrammarとjapaneseだけが日本語）
+・各問題の選択肢は5つ、正解は1つだけ
+・answerは正解の選択肢の番号（0から始まる）
+・本文を読めば答えられる内容理解問題にすること`;
 async function genArticle(i,btn){
   const topic=S.topics[i];
   if(!topic||!topic.trim())return toast('お題が空です','err');
