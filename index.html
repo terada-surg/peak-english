@@ -414,7 +414,11 @@ input[type=range]::-webkit-slider-thumb{
   max-width:86vw;text-align:center;box-shadow:0 10px 30px rgba(22,32,58,.35);
 }
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-#toast.err{border-color:var(--red)}
+#toast.err{
+  border-color:var(--red);background:#3A2022;pointer-events:auto;cursor:pointer;
+  text-align:left;font-weight:600;padding-right:36px;
+}
+#toast.err::after{content:'✕';position:absolute;right:13px;top:50%;transform:translateY(-50%);opacity:.7;font-size:11px}
 .modal-bg{
   position:fixed;inset:0;background:rgba(22,32,58,.55);
   backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
@@ -448,6 +452,13 @@ a{color:var(--gold);font-weight:600}
 .warn-box{
   background:var(--gold-pale);border:1px solid var(--gold-soft);border-radius:2px;
   padding:11px 13px;font-size:11.5px;line-height:1.8;color:#6E5A32;margin-bottom:12px;
+}
+/* Stays put in the flow (not a fading toast) so a failure is visible exactly
+   where the reader is already looking — e.g. right under a Generate button. */
+.inline-alert{
+  background:var(--red-pale);border:1px solid var(--red);border-left:3px solid var(--red);
+  border-radius:2px;padding:11px 13px;margin-top:10px;
+  font-size:12.5px;line-height:1.75;color:#7A3335;font-weight:600;
 }
 
 @media(min-width:700px){
@@ -508,6 +519,7 @@ a{color:var(--gold);font-weight:600}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.9 2.6L22.5 18.5l-2.6.9L19 22l-.9-2.6-2.6-.9 2.6-.9z"/></svg>
         <span id="btnGenTopicsLabel">7日分のお題を作成</span>
       </button>
+      <div id="topicGenErr" class="hidden"></div>
       <div id="topicList" style="margin-top:13px"></div>
     </div>
 
@@ -795,7 +807,19 @@ function toast(msg,type){
   const t=$('#toast');t.textContent=msg;
   t.className=type==='err'?'show err':'show';
   haptic(type==='err'?'heavy':'light');
-  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className='',3200);
+  clearTimeout(toastTimer);
+  // Errors stay up much longer (and can be tapped away) so a failure is never missed
+  // just because the reader was looking elsewhere on the screen — the previous
+  // 3.2s auto-fade was too easy to miss, which is what happened here.
+  toastTimer=setTimeout(()=>t.className='',type==='err'?9000:3200);
+}
+$('#toast').addEventListener('click',()=>{clearTimeout(toastTimer);$('#toast').className=''});
+// A message that stays in the page flow (not a fading toast) right next to
+// where the action was triggered, so a failure can't be missed by looking away.
+function setInlineErr(id,msg){
+  const el=$('#'+id);if(!el)return;
+  if(msg){el.textContent='⚠ '+msg;el.className='inline-alert'}
+  else{el.className='hidden'}
 }
 function playSound(kind){
   try{
@@ -918,13 +942,14 @@ async function genTopics(){
   if(!S.themeInput.trim())return toast('テーマを入力してください','err');
   if(!requireKey()||genTopicBusy)return;
   genTopicBusy=true;setBusy('#btnGenTopics','#btnGenTopicsLabel','考え中…','7日分のお題を作成',true);
+  setInlineErr('topicGenErr','');
   try{
     const raw=await gem({prompt:`テーマ「${S.themeInput}」について、英語学習者が学べる具体的なサブトピック（お題）を7つ日本語で作成。JSON形式: { "topics": ["お題1","お題2","お題3","お題4","お題5","お題6","お題7"] }`,json:true});
     const r=parseJSON(raw);
     if(!Array.isArray(r.topics)||r.topics.length<7)throw new Error('もう一度お試しください');
     S.topics=r.topics.slice(0,7);save();renderTopics();
     toast('7つのお題を作成しました');
-  }catch(e){toast(e.message,'err')}
+  }catch(e){toast(e.message,'err');setInlineErr('topicGenErr',e.message)}
   finally{genTopicBusy=false;setBusy('#btnGenTopics','#btnGenTopicsLabel','','7日分のお題を作成',false)}
 }
 async function regenTopic(i,btn){
