@@ -459,6 +459,12 @@ a{color:var(--gold);font-weight:600}
   background:var(--red-pale);border:1px solid var(--red);border-left:3px solid var(--red);
   border-radius:2px;padding:11px 13px;margin-top:10px;white-space:pre-wrap;
   font-size:12.5px;line-height:1.75;color:#7A3335;font-weight:600;
+  word-break:break-word;
+}
+.inline-ok{
+  background:var(--green-pale);border:1px solid var(--green);border-left:3px solid var(--green);
+  border-radius:2px;padding:11px 13px;margin-top:10px;white-space:pre-wrap;
+  font-size:12.5px;line-height:1.75;color:#2E5540;font-weight:600;
 }
 
 @media(min-width:700px){
@@ -728,9 +734,17 @@ a{color:var(--gold);font-weight:600}
     </div>
 
     <div class="set-group">
+      <label class="lbl">接続テスト</label>
+      <div class="sec-note" style="margin:0 0 10px">AIとの通信がうまくいくか、その場で確かめます。うまくいかない場合は、原因がそのまま表示されます。</div>
+      <button class="btn wide" id="btnTestConn"><span id="btnTestConnLabel">接続テストを実行</span></button>
+      <div id="testResult" class="hidden"></div>
+    </div>
+
+    <div class="set-group">
       <label class="lbl">データ</label>
       <div class="sec-note" style="margin:0 0 10px">教材・台本・回答など学習データをすべて消去します（APIキーは残ります）。</div>
       <button class="btn danger wide" id="btnResetData">学習データを初期化</button>
+      <div class="sec-note" style="margin-top:14px;text-align:center;letter-spacing:.1em" id="verStamp"></div>
     </div>
   </div>
 </div>
@@ -857,6 +871,7 @@ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{
 },400)}
 
 /* ---------- Gemini API ---------- */
+const APP_VERSION='2026.08.12-4';
 const TXT_MODEL='gemini-2.5-flash';
 const IMG_MODEL='gemini-2.5-flash-image';
 function apiKey(){return store.get('pe_key','')}
@@ -1550,7 +1565,35 @@ function refreshKeyStatus(){
   $('#keyStatus').innerHTML=k
     ?`✓ 保存済み（…${esc(k.slice(-4))}）— AI機能が使えます`
     :'キーは未設定です。上の手順で無料キーを作成してください。';
+  $('#verStamp').textContent='Peak English '+APP_VERSION;
 }
+// One-tap self-diagnosis: makes the smallest possible real request and reports
+// exactly what came back, so a failure can be understood without dev tools.
+$('#btnTestConn').addEventListener('click',async()=>{
+  haptic('med');
+  const box=$('#testResult');
+  const k=apiKey();
+  if(!k){box.className='inline-alert';box.textContent='⚠ APIキーがまだ保存されていません。上の欄にキーを貼り付けて「キーを保存」を押してください。';return}
+  box.className='inline-ok';box.textContent='テスト中…';
+  setBusy('#btnTestConn','#btnTestConnLabel','テスト中…','接続テストを実行',true);
+  try{
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${TXT_MODEL}:generateContent?key=${k}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:'Say OK'}]}]})});
+    let detail='';
+    try{const b=await r.json();detail=b?.error?.message||(b?.candidates?'':'（応答の形式が想定と異なります）')}catch(_e){detail='（応答を読み取れませんでした）'}
+    if(r.ok){
+      box.className='inline-ok';
+      box.textContent=`✓ 接続成功（バージョン ${APP_VERSION}）\nAI機能をお使いいただけます。`;
+    }else{
+      box.className='inline-alert';
+      box.textContent=`⚠ 接続できませんでした\nエラー番号: ${r.status}\nモデル: ${TXT_MODEL}\nバージョン: ${APP_VERSION}\n詳細: ${detail||'(詳細なし)'}`;
+    }
+  }catch(e){
+    box.className='inline-alert';
+    box.textContent=`⚠ ネットワークに接続できませんでした\nバージョン: ${APP_VERSION}\n詳細: ${e.message||e}`;
+  }finally{setBusy('#btnTestConn','#btnTestConnLabel','','接続テストを実行',false)}
+});
 $('#btnKeyEye').addEventListener('click',()=>{
   const i=$('#apiKeyInput');
   i.type=i.type==='password'?'text':'password';
