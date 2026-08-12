@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Peak English">
+<meta name="theme-color" content="#16203A">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Peak English — Executive English Training</title>
+<style>
+/* ============ PEAK PERFORMANCE HEALTH DESIGN SYSTEM ============ */
+:root{
+  --bg:#F4EFE3;
+  --paper:#FCFAF3;
+  --paper-2:#F8F4E9;
+  --navy:#1E2A44;
+  --navy-deep:#16203A;
+  --navy-soft:#2C3A5C;
+  --ink:#2E3852;
+  --gold:#B08D4A;
+  --gold-soft:#D5BE8F;
+  --gold-pale:#EFE6D2;
+  --line:#E1D9C4;
+  --line-strong:#CBC0A4;
+  --muted:#8D8FA0;
+  --green:#4A7C59;
+  --green-pale:#EAF1EC;
+  --red:#A4494B;
+  --red-pale:#F6E9E9;
+  --serif:'Didot','Bodoni 72','Hiragino Mincho ProN','Yu Mincho',Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,'Helvetica Neue','Hiragino Kaku Gothic ProN','Hiragino Sans','Yu Gothic',sans-serif;
+  --sat:env(safe-area-inset-top,0px);
+  --sab:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--ink);
+  height:100dvh;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  font-size:15px;
+  overscroll-behavior:none;
+}
+
+/* ============ HEADER ============ */
+header{
+  flex-shrink:0;
+  background:var(--bg);
+  padding:calc(var(--sat) + 10px) 16px 0;
+  z-index:40;
+}
+.h-inner{
+  max-width:860px;margin:0 auto;
+  border-bottom:1px solid var(--line-strong);
+  padding-bottom:9px;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
+}
+.brand{display:flex;flex-direction:column;gap:1px;min-width:0}
+.brand .kicker{
+  font-family:var(--sans);font-size:8px;letter-spacing:.32em;
+  color:var(--gold);font-weight:600;text-transform:uppercase;white-space:nowrap;
+}
+.brand h1{
+  font-family:var(--serif);font-weight:500;
+  font-size:21px;letter-spacing:.14em;color:var(--navy);
+  white-space:nowrap;line-height:1.15;
+}
+.h-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.icon-btn{
+  width:36px;height:36px;border-radius:50%;
+  border:1px solid var(--line-strong);background:var(--paper);
+  color:var(--navy);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;
+}
+.icon-btn:active{transform:scale(.92);background:var(--gold-pale)}
+.icon-btn svg{width:17px;height:17px}
+
+/* ============ MAIN ============ */
+main{
+  flex:1;min-height:0;
+  width:100%;max-width:860px;margin:0 auto;
+  position:relative;
+  display:flex;flex-direction:column;
+}
+.tabpane{
+  display:none;
+  flex:1;min-height:0;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:16px 16px calc(24px + var(--sab));
+}
+.tabpane.on{display:block}
+.tabpane.flexcol{display:none}
+.tabpane.flexcol.on{display:flex;flex-direction:column;overflow:hidden}
+
+/* ============ BOTTOM TAB BAR ============ */
+nav{
+  flex-shrink:0;
+  background:var(--navy-deep);
+  padding-bottom:var(--sab);
+  z-index:50;
+  box-shadow:0 -6px 24px rgba(22,32,58,.18);
+}
+.nav-inner{max-width:860px;margin:0 auto;display:flex}
+.tab{
+  flex:1;min-width:0;
+  background:none;border:none;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:9px 0 7px;
+  color:#7C87A6;
+  border-top:2px solid transparent;
+  transition:color .15s;
+}
+.tab svg{width:20px;height:20px;stroke-width:1.6}
+.tab span{font-size:8.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-family:var(--sans)}
+.tab.on{color:var(--gold-soft);border-top-color:var(--gold)}
+
+/* ============ CARDS & TYPE ============ */
+.card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:18px 16px;
+  margin-bottom:14px;
+  box-shadow:0 1px 4px rgba(30,42,68,.05);
+}
+.card-frame{position:relative}
+.card-frame::after{
+  content:'';position:absolute;inset:4px;
+  border:1px solid var(--gold-pale);border-radius:2px;pointer-events:none;
+}
+.sec{margin-bottom:16px}
+.sec-kicker{
+  font-size:8.5px;letter-spacing:.3em;color:var(--gold);font-weight:700;
+  text-transform:uppercase;margin-bottom:4px;
+}
+.sec-title{
+  font-family:var(--serif);font-weight:500;
+  font-size:19px;letter-spacing:.06em;color:var(--navy);
+  line-height:1.3;margin-bottom:2px;
+}
+.sec-note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:5px}
+.divider{height:1px;background:var(--line);margin:14px 0}
+.gold-rule{width:34px;height:1px;background:var(--gold);margin:8px 0 10px}
+
+/* ============ BUTTONS ============ */
+.btn{
+  font-family:var(--sans);
+  border:1px solid var(--navy);background:var(--navy);color:#F5F1E6;
+  border-radius:2px;
+  padding:13px 18px;
+  font-size:13.5px;font-weight:600;letter-spacing:.08em;
+  cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .15s;
+  min-height:46px;
+}
+.btn:active{transform:scale(.97);opacity:.85}
+.btn:disabled{opacity:.4;pointer-events:none}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#FFFDF6}
+.btn.ghost{background:transparent;color:var(--navy);border-color:var(--line-strong)}
+.btn.ghost:active{background:var(--gold-pale)}
+.btn.danger{background:transparent;color:var(--red);border-color:var(--red)}
+.btn.wide{width:100%}
+.btn.sm{padding:8px 13px;min-height:38px;font-size:12px}
+.btn svg{width:15px;height:15px;flex-shrink:0}
+
+/* chips (level select etc.) */
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  border:1px solid var(--line-strong);background:var(--paper);
+  color:var(--navy-soft);border-radius:2px;
+  padding:9px 0;width:calc((100% - 35px)/6);min-width:44px;
+  font-size:12.5px;font-weight:600;letter-spacing:.05em;
+  cursor:pointer;text-align:center;transition:all .15s;
+}
+.chip.on{background:var(--navy);border-color:var(--navy);color:var(--gold-soft)}
+.chip:active{transform:scale(.95)}
+
+/* pills (speed etc.) */
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{
+  border:1px solid rgba(213,190,143,.4);background:rgba(255,255,255,.06);
+  color:#B9C0D4;border-radius:20px;
+  padding:7px 13px;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;
+  cursor:pointer;transition:all .15s;
+}
+.pill.on{background:var(--gold);border-color:var(--gold);color:#16203A}
+.pill:active{transform:scale(.94)}
+
+/* ============ INPUTS ============ */
+input[type=text],input[type=password],textarea,select{
+  font-family:var(--sans);
+  width:100%;
+  border:1px solid var(--line-strong);border-radius:2px;
+  background:#FFFEF9;color:var(--ink);
+  padding:12px 13px;font-size:15px;line-height:1.7;
+  outline:none;transition:border-color .15s;
+  -webkit-appearance:none;appearance:none;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--gold)}
+textarea{resize:vertical}
+label.lbl{
+  display:block;font-size:10px;letter-spacing:.22em;font-weight:700;
+  color:var(--muted);text-transform:uppercase;margin-bottom:7px;
+}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:2px;
+  background:var(--line-strong);border-radius:2px;outline:none;margin:14px 0 6px;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:26px;height:26px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--gold);
+  box-shadow:0 1px 5px rgba(30,42,68,.25);cursor:pointer;
+}
+.range-val{
+  font-family:var(--serif);font-size:21px;color:var(--navy);
+  letter-spacing:.05em;font-variant-numeric:tabular-nums;
+}
+.range-row{display:flex;justify-content:space-between;align-items:baseline}
+.range-scale{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* ============ TOPIC LIST ============ */
+.day-row{
+  display:flex;gap:8px;align-items:stretch;
+  border:1px solid var(--line);background:var(--paper);
+  border-radius:2px;padding:8px;margin-bottom:8px;
+}
+.day-tag{
+  font-family:var(--serif);font-size:11px;letter-spacing:.14em;
+  color:var(--gold);width:34px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  border-right:1px solid var(--line);
+}
+.day-row textarea{
+  flex:1;border:none;background:transparent;padding:4px 6px;
+  font-size:13.5px;line-height:1.55;min-height:44px;resize:none;
+}
+.day-row .mini{
+  flex-shrink:0;display:flex;flex-direction:column;gap:5px;justify-content:center;
+}
+.mini-btn{
+  border:1px solid var(--line-strong);background:var(--paper-2);color:var(--navy-soft);
+  border-radius:2px;padding:6px 9px;font-size:10.5px;font-weight:600;
+  cursor:pointer;white-space:nowrap;letter-spacing:.04em;min-height:30px;
+}
+.mini-btn.navy{background:var(--navy);border-color:var(--navy);color:var(--gold-soft)}
+.mini-btn:active{transform:scale(.94)}
+.mini-btn:disabled{opacity:.4;pointer-events:none}
+
+/* ============ READING RESULT BLOCKS ============ */
+.result-block{
+  border:1px solid var(--line);border-left:2px solid var(--gold);
+  background:var(--paper);border-radius:2px;
+  padding:15px 15px;margin-bottom:12px;
+}
+.result-block h4{
+  font-size:9.5px;letter-spacing:.26em;color:var(--gold);
+  text-transform:uppercase;margin-bottom:9px;font-weight:700;
+}
+.result-block .body{font-size:13.5px;line-height:2;color:var(--ink);white-space:pre-wrap}
+.result-block .body.en{font-family:var(--serif);font-size:16px;line-height:1.95;letter-spacing:.01em}
+
+/* ============ QUIZ ============ */
+.quiz-q{
+  border:1px solid var(--line);background:var(--paper);
+  border-radius:2px;padding:15px;margin-bottom:12px;
+}
+.quiz-q .qt{
+  font-family:var(--serif);font-size:15.5px;line-height:1.6;
+  color:var(--navy);margin-bottom:12px;letter-spacing:.01em;
+}
+.quiz-q .qnum{color:var(--gold);letter-spacing:.1em;font-size:12px;display:block;margin-bottom:4px}
+.opt{
+  display:block;width:100%;text-align:left;
+  border:1px solid var(--line-strong);background:#FFFEF9;color:var(--ink);
+  border-radius:2px;padding:12px 13px;margin-bottom:7px;
+  font-size:13.5px;line-height:1.55;cursor:pointer;transition:all .15s;
+  font-family:var(--sans);
+}
+.opt:active{transform:scale(.985)}
+.opt.correct{background:var(--green-pale);border-color:var(--green);color:#2E5540;font-weight:600}
+.opt.wrong{background:var(--red-pale);border-color:var(--red);color:#7A3335}
+.opt.reveal{border-color:var(--green);border-style:dashed}
+.opt:disabled{cursor:default}
+
+/* ============ STAT (WPM) ============ */
+.stats{display:flex;gap:10px;margin-bottom:14px}
+.stat{
+  flex:1;background:var(--paper);border:1px solid var(--line);
+  border-radius:2px;padding:13px 6px;text-align:center;
+}
+.stat.hero{background:var(--navy-deep);border-color:var(--navy-deep)}
+.stat .lab{font-size:8.5px;letter-spacing:.24em;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:5px}
+.stat.hero .lab{color:var(--gold-soft)}
+.stat .val{font-family:var(--serif);font-size:28px;color:var(--navy);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.stat.hero .val{color:#F2ECDC}
+
+/* ============ LISTEN PLAYER ============ */
+.player{
+  flex-shrink:0;
+  background:var(--navy-deep);
+  border-radius:3px;
+  padding:14px 14px 12px;
+  margin:14px 16px 10px;
+  box-shadow:0 8px 28px rgba(22,32,58,.28);
+  position:relative;
+}
+.player::after{content:'';position:absolute;inset:5px;border:1px solid rgba(213,190,143,.22);border-radius:2px;pointer-events:none}
+.p-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;position:relative;z-index:1}
+.p-status{display:flex;flex-direction:column;gap:1px}
+.p-status .k{font-size:7.5px;letter-spacing:.3em;color:var(--gold);font-weight:700;text-transform:uppercase}
+.p-status .v{font-family:var(--serif);font-size:14px;color:#E9E2CE;letter-spacing:.08em;font-variant-numeric:tabular-nums}
+.p-controls{display:flex;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1}
+.pbtn{
+  border:1px solid rgba(213,190,143,.35);background:rgba(255,255,255,.05);
+  color:#D9D2BC;border-radius:50%;
+  width:44px;height:44px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;flex-shrink:0;
+}
+.pbtn svg{width:17px;height:17px}
+.pbtn:active{transform:scale(.9)}
+.pbtn.main{width:58px;height:58px;background:var(--gold);border-color:var(--gold);color:#16203A}
+.pbtn.main svg{width:23px;height:23px}
+.pbtn.toggled{background:var(--gold);border-color:var(--gold);color:#16203A}
+.p-speed{display:flex;gap:6px;justify-content:center;margin-top:12px;flex-wrap:wrap;position:relative;z-index:1}
+
+/* reader */
+.reader-wrap{flex:1;min-height:0;margin:0 16px;display:flex;flex-direction:column}
+.reader{
+  flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:var(--paper);border:1px solid var(--line);border-radius:3px;
+  padding:20px 18px 45vh;
+  font-family:var(--serif);
+  font-size:19px;line-height:2.05;color:var(--navy-soft);
+  letter-spacing:.01em;
+}
+.reader textarea{
+  border:none;background:transparent;width:100%;height:100%;
+  font-family:var(--serif);font-size:18px;line-height:2;padding:0;
+}
+.sent{cursor:pointer;border-radius:2px;transition:background .2s;padding:1px 0}
+.sent.done{color:#A9A594}
+.sent.active{
+  background:linear-gradient(to right,rgba(176,141,74,.16),rgba(176,141,74,.16)) no-repeat;
+  background-size:var(--prog,0%) 100%;
+  color:var(--navy);font-weight:600;
+  box-shadow:inset 0 -1.5px 0 var(--gold);
+}
+.listen-hint{
+  flex-shrink:0;text-align:center;font-size:10.5px;color:var(--muted);
+  padding:7px 16px calc(8px);letter-spacing:.06em;
+}
+
+/* ============ CHAT (Roleplay) ============ */
+.chat-box{
+  flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:16px;display:flex;flex-direction:column;gap:12px;
+}
+.msg{max-width:82%;padding:11px 14px;border-radius:3px;font-size:14px;line-height:1.75;white-space:pre-wrap}
+.msg.ai{
+  align-self:flex-start;background:var(--paper);border:1px solid var(--line);
+  color:var(--ink);border-left:2px solid var(--gold);
+}
+.msg.me{
+  align-self:flex-end;background:var(--navy);color:#EFEADB;
+  border-right:2px solid var(--gold);
+}
+.chat-input{
+  flex-shrink:0;display:flex;gap:8px;align-items:flex-end;
+  padding:10px 16px calc(10px);
+  background:var(--bg);border-top:1px solid var(--line);
+}
+.chat-input textarea{flex:1;max-height:110px;min-height:46px;font-size:15px}
+.typing{display:flex;gap:4px;padding:14px;align-self:flex-start}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:bl 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,60%,100%{opacity:.25}30%{opacity:1}}
+
+/* ============ SPEECH REC ============ */
+.timer-disp{
+  font-family:var(--serif);font-size:52px;color:var(--navy);
+  text-align:center;letter-spacing:.08em;font-variant-numeric:tabular-nums;
+  margin:6px 0 14px;
+}
+.rec-btn{
+  width:84px;height:84px;border-radius:50%;
+  border:1px solid var(--red);background:var(--paper);color:var(--red);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;margin:0 auto;transition:all .2s;position:relative;
+}
+.rec-btn svg{width:30px;height:30px}
+.rec-btn.rec{background:var(--red);color:#fff;animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(164,73,75,.35)}70%{box-shadow:0 0 0 18px rgba(164,73,75,0)}100%{box-shadow:0 0 0 0 rgba(164,73,75,0)}}
+.comic-img{width:100%;border:1px solid var(--line);border-radius:3px;box-shadow:0 4px 16px rgba(30,42,68,.12)}
+
+/* ============ TOAST / MODAL / LOADER ============ */
+#toast{
+  position:fixed;top:calc(var(--sat) + 14px);left:50%;transform:translateX(-50%) translateY(-8px);
+  background:var(--navy-deep);color:#F0EBDA;
+  border:1px solid var(--gold);border-radius:2px;
+  padding:11px 20px;font-size:13px;font-weight:500;letter-spacing:.04em;
+  z-index:300;opacity:0;pointer-events:none;transition:all .25s;
+  max-width:86vw;text-align:center;box-shadow:0 10px 30px rgba(22,32,58,.35);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{border-color:var(--red)}
+.modal-bg{
+  position:fixed;inset:0;background:rgba(22,32,58,.55);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  z-index:200;display:none;align-items:flex-end;justify-content:center;
+}
+.modal-bg.show{display:flex}
+.modal{
+  background:var(--bg);width:100%;max-width:560px;
+  border-radius:8px 8px 0 0;
+  max-height:86dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:20px 20px calc(26px + var(--sab));
+  animation:up .25s ease;
+}
+@keyframes up{from{transform:translateY(40px);opacity:.5}to{transform:translateY(0);opacity:1}}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.modal-head .sec-title{font-size:17px}
+.close-x{
+  width:32px;height:32px;border-radius:50%;border:1px solid var(--line-strong);
+  background:var(--paper);color:var(--navy);font-size:15px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.spin{animation:rot 1s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.fade{animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.hidden{display:none!important}
+a{color:var(--gold);font-weight:600}
+
+/* setting group in audio modal */
+.set-group{background:var(--paper);border:1px solid var(--line);border-radius:2px;padding:14px;margin-bottom:11px}
+.warn-box{
+  background:var(--gold-pale);border:1px solid var(--gold-soft);border-radius:2px;
+  padding:11px 13px;font-size:11.5px;line-height:1.8;color:#6E5A32;margin-bottom:12px;
+}
+
+@media(min-width:700px){
+  body{font-size:15.5px}
+  .brand h1{font-size:24px}
+  .tab svg{width:22px;height:22px}
+  .tab span{font-size:10px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .reader{font-size:21px}
+  .modal{border-radius:8px;margin-bottom:8dvh}
+  .modal-bg{align-items:center}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-inner">
+    <div class="brand">
+      <span class="kicker">English Training for Executives</span>
+      <h1>PEAK ENGLISH</h1>
+    </div>
+    <div class="h-actions">
+      <button class="icon-btn" id="btnSettings" title="設定" aria-label="設定">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ TOPIC ============ -->
+  <div class="tabpane on" id="pane-topic">
+    <div class="sec">
+      <div class="sec-kicker">Curriculum</div>
+      <div class="sec-title">Topic &amp; Article</div>
+      <div class="sec-note">テーマから1週間分のお題を作り、その日の英文教材を生成します。</div>
+    </div>
+
+    <div class="card card-frame">
+      <label class="lbl">Level — CEFR</label>
+      <div class="chips" id="levelChips"></div>
+      <div class="divider"></div>
+      <label class="lbl">Length — 語数</label>
+      <div class="range-row">
+        <span style="font-size:12px;color:var(--muted)">目標語数</span>
+        <span class="range-val"><span id="wcVal">200</span> <span style="font-size:12px;color:var(--muted)">words</span></span>
+      </div>
+      <input type="range" id="wcRange" min="200" max="1000" step="100" value="200">
+      <div class="range-scale"><span>200</span><span>400</span><span>600</span><span>800</span><span>1000</span></div>
+    </div>
+
+    <div class="card">
+      <label class="lbl">Weekly Theme — 今週のテーマ</label>
+      <input type="text" id="themeInput" placeholder="例：トライアスロン、分子栄養学、経営…">
+      <button class="btn gold wide" id="btnGenTopics" style="margin-top:11px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.9 2.6L22.5 18.5l-2.6.9L19 22l-.9-2.6-2.6-.9 2.6-.9z"/></svg>
+        <span id="btnGenTopicsLabel">7日分のお題を作成</span>
+      </button>
+      <div id="topicList" style="margin-top:13px"></div>
+    </div>
+
+    <div class="card">
+      <label class="lbl">English Text — 教材本文</label>
+      <textarea id="mainText" rows="9" placeholder="Generateを押すと、ここに英文が入ります。ご自身の英文を貼り付けてもOKです。"></textarea>
+    </div>
+
+    <div id="articleResults"></div>
+  </div>
+
+  <!-- ============ READ / WPM ============ -->
+  <div class="tabpane" id="pane-read">
+    <div class="sec">
+      <div class="sec-kicker">Reading Fluency</div>
+      <div class="sec-title">WPM Timer</div>
+      <div class="sec-note">Startを押して音読し、読み終えたらStop。読む速さ（words per minute）を計測します。</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="lab">Words</div><div class="val" id="stWords">0</div></div>
+      <div class="stat"><div class="lab">Seconds</div><div class="val" id="stTime">0</div></div>
+      <div class="stat hero"><div class="lab">WPM</div><div class="val" id="stWpm">0.0</div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn wide" id="wpmStart">Start</button>
+      <button class="btn ghost wide" id="wpmStop">Stop</button>
+      <button class="btn ghost wide" id="wpmReset">Reset</button>
+    </div>
+    <div class="card" style="padding:16px">
+      <div id="wpmText" style="font-family:var(--serif);font-size:18px;line-height:2;color:var(--navy-soft);min-height:180px;white-space:pre-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ============ LISTEN ============ -->
+  <div class="tabpane flexcol" id="pane-listen">
+    <div class="player">
+      <div class="p-top">
+        <div class="p-status">
+          <span class="k">Now Playing</span>
+          <span class="v" id="lsPos">— / —</span>
+        </div>
+        <div class="p-status" style="text-align:right;align-items:flex-end">
+          <span class="k">Speed</span>
+          <span class="v" id="lsRateDisp">0.50×</span>
+        </div>
+      </div>
+      <div class="p-controls">
+        <button class="pbtn" id="lsPrev" title="前の文" aria-label="前の文"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2.2v14H6zM20 5.8v12.4a.7.7 0 01-1.1.57L9.8 12.6a.72.72 0 010-1.2l9.1-6.17A.7.7 0 0120 5.8z"/></svg></button>
+        <button class="pbtn" id="lsRepeat" title="この文をもう一度" aria-label="この文をもう一度"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 018-8 8 8 0 017 4.2"/><path d="M19 4v4.5h-4.5"/><path d="M20 12a8 8 0 01-8 8 8 8 0 01-7-4.2"/><path d="M5 20v-4.5h4.5"/></svg></button>
+        <button class="pbtn main" id="lsPlay" aria-label="再生"><svg viewBox="0 0 24 24" fill="currentColor" id="lsPlayIcon"><path d="M8 5.6v12.8a.8.8 0 001.23.67l10-6.4a.8.8 0 000-1.34l-10-6.4A.8.8 0 008 5.6z"/></svg></button>
+        <button class="pbtn" id="lsStop" title="停止" aria-label="停止"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="6.5" width="11" height="11" rx="1"/></svg></button>
+        <button class="pbtn" id="lsNext" title="次の文" aria-label="次の文"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.8 5h2.2v14h-2.2zM4 5.8v12.4a.7.7 0 001.1.57l9.1-6.17a.72.72 0 000-1.2L5.1 5.23A.7.7 0 004 5.8z"/></svg></button>
+      </div>
+      <div class="p-speed" id="lsSpeedPills"></div>
+      <div class="p-speed" style="margin-top:8px">
+        <button class="pill" id="lsLoop" title="全文リピート">∞ Loop</button>
+        <button class="pill" id="lsGapBtn" title="文間ポーズ">間 <span id="lsGapDisp">1.0s</span></button>
+        <button class="pill" id="lsVoiceBtn" title="音声設定">♪ Voice</button>
+      </div>
+    </div>
+    <div class="reader-wrap">
+      <div class="reader" id="lsReader"></div>
+    </div>
+    <div class="listen-hint">文をタップするとそこから再生します ・ 速度0.3×対応 ・ 「間」で文と文のあいだにポーズ</div>
+  </div>
+
+  <!-- ============ SPEECH ============ -->
+  <div class="tabpane" id="pane-speech">
+    <div class="sec">
+      <div class="sec-kicker">Speaking</div>
+      <div class="sec-title">One-Minute Speech</div>
+      <div class="sec-note">台本づくり → 4コマ画像で記憶 → 録音してAI添削、の3ステップ。</div>
+    </div>
+
+    <div class="card">
+      <label class="lbl">Step 1 — Script 台本づくり</label>
+      <div class="chips" id="spLevelChips" style="margin-bottom:11px"></div>
+      <button class="btn wide" id="btnGenScript"><span id="btnGenScriptLabel">教材から1分スピーチ台本を作成</span></button>
+      <textarea id="speechScript" rows="6" placeholder="ここに台本が入ります。" style="margin-top:11px"></textarea>
+    </div>
+
+    <div class="card">
+      <label class="lbl">Step 2 — Memory 4コマ画像</label>
+      <div class="sec-note" style="margin:0 0 11px">台本を4つの場面のイラストにします。絵を見ながら話す練習をすると、暗記に頼らず話せます。</div>
+      <button class="btn ghost wide" id="btnGenComic"><span id="btnGenComicLabel">4コマ画像を生成</span></button>
+      <div id="comicArea" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card card-frame" style="text-align:center">
+      <label class="lbl" style="text-align:left">Step 3 — Challenge 録音</label>
+      <div class="timer-disp" id="recTimer">00:00</div>
+      <button class="rec-btn" id="btnRec" aria-label="録音">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" id="recIcon"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21M8.5 21h7"/></svg>
+      </button>
+      <div class="sec-note" id="recHint" style="margin-top:12px">マイクボタンを押して1分間スピーチ</div>
+    </div>
+
+    <div id="recResult"></div>
+  </div>
+
+  <!-- ============ PREP ============ -->
+  <div class="tabpane" id="pane-prep">
+    <div class="sec">
+      <div class="sec-kicker">Structured Answer</div>
+      <div class="sec-title">PREP Q&amp;A</div>
+      <div class="sec-note">教材に関する質問にPREP法（結論→理由→例→結論）で答え、AI添削を受けます。</div>
+    </div>
+    <div class="card">
+      <button class="btn wide" id="btnGenQ"><span id="btnGenQLabel">質問をもらう</span></button>
+      <div id="prepQArea" style="margin-top:12px"></div>
+    </div>
+    <div id="prepAnswerCard" class="card hidden">
+      <label class="lbl">Your Answer — 英語で回答</label>
+      <textarea id="prepAnswer" rows="6" placeholder="Point → Reason → Example → Point の順を意識して書いてみましょう。"></textarea>
+      <button class="btn gold wide" id="btnEvalPrep" style="margin-top:11px"><span id="btnEvalPrepLabel">添削してもらう</span></button>
+    </div>
+    <div id="prepResult"></div>
+  </div>
+
+  <!-- ============ TALK (Roleplay) ============ -->
+  <div class="tabpane flexcol" id="pane-talk">
+    <div id="talkSetup" style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px">
+      <div class="sec">
+        <div class="sec-kicker">Conversation</div>
+        <div class="sec-title">Roleplay</div>
+        <div class="sec-note">場面を決めて、AIと英語で会話練習。終了時に「次に練習すべきフレーズ」をもらえます。</div>
+      </div>
+      <div class="card">
+        <label class="lbl">Level — CEFR</label>
+        <div class="chips" id="rpLevelChips"></div>
+        <div class="divider"></div>
+        <label class="lbl">Situation — 場面設定</label>
+        <textarea id="rpSituation" rows="4" placeholder="例：国際学会のレセプションで、海外の医師に自己紹介して研究の話をする。"></textarea>
+        <button class="btn gold wide" id="btnStartRp" style="margin-top:11px"><span id="btnStartRpLabel">会話を始める</span></button>
+      </div>
+    </div>
+    <div id="talkLive" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
+      <div style="flex-shrink:0;display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line)">
+        <span style="font-size:11px;letter-spacing:.18em;color:var(--gold);font-weight:700;text-transform:uppercase">● Live — <span id="rpLevelDisp">B1</span></span>
+        <button class="btn danger sm" id="btnFinishRp">Finish</button>
+      </div>
+      <div class="chat-box" id="chatBox"></div>
+      <div class="chat-input">
+        <textarea id="chatInput" rows="1" placeholder="英語でメッセージ…"></textarea>
+        <button class="btn gold" id="btnSend" style="min-height:46px;padding:0 16px" aria-label="送信"><svg viewBox="0 0 24 24" fill="currentColor" style="width:17px;height:17px"><path d="M3.4 20.3l17.4-7.6a.75.75 0 000-1.4L3.4 3.7a.75.75 0 00-1 .9L4.7 11l9.3 1-9.3 1-2.3 6.4a.75.75 0 001 .9z"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ WRITE ============ -->
+  <div class="tabpane" id="pane-write">
+    <div class="sec">
+      <div class="sec-kicker">Writing</div>
+      <div class="sec-title">Diary &amp; Essay</div>
+      <div class="sec-note">日記やメールなど自由に英語で書くと、AIが「自然な表現」と「フォーマルな表現」に磨き上げます。</div>
+    </div>
+    <div class="card">
+      <textarea id="diaryInput" rows="8" placeholder="例：Today I saw twelve patients and ran 10 km after work. I felt great because…"></textarea>
+      <button class="btn gold wide" id="btnPolish" style="margin-top:11px"><span id="btnPolishLabel">添削・推敲してもらう</span></button>
+    </div>
+    <div id="writeResult"></div>
+  </div>
+
+</main>
+
+<nav>
+  <div class="nav-inner">
+    <button class="tab on" data-tab="topic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/></svg><span>Topic</span></button>
+    <button class="tab" data-tab="read"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10.4 4.9 8 4.5 5.5 4.5c-1 0-2 .1-2.5.3v13.4c.5-.2 1.5-.3 2.5-.3 2.5 0 4.9.4 6.5 2 1.6-1.6 4-2 6.5-2 1 0 2 .1 2.5.3V4.8c-.5-.2-1.5-.3-2.5-.3-2.5 0-4.9.4-6.5 2z"/><path d="M12 6.5V20"/></svg><span>Read</span></button>
+    <button class="tab" data-tab="listen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4.2 4.2 0 010 6M18 6.5a8 8 0 010 11"/></svg><span>Listen</span></button>
+    <button class="tab" data-tab="speech"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21"/></svg><span>Speech</span></button>
+    <button class="tab" data-tab="prep"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 114.1 1.9c-.8.7-1.6 1.2-1.6 2.4"/><circle cx="12" cy="16.8" r=".4" fill="currentColor"/></svg><span>PREP</span></button>
+    <button class="tab" data-tab="talk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 18l-4.5 3V6a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2z"/></svg><span>Talk</span></button>
+    <button class="tab" data-tab="write"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3.5l3.5 3.5L8 19.5 3.5 20.5 4.5 16z"/><path d="M14.5 6l3.5 3.5"/></svg><span>Write</span></button>
+  </div>
+</nav>
+
+<div id="toast"></div>
+
+<!-- ============ SETTINGS MODAL ============ -->
+<div class="modal-bg" id="settingsModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="sec-kicker">Settings</div>
+        <div class="sec-title">設定</div>
+      </div>
+      <button class="close-x" data-close="settingsModal">✕</button>
+    </div>
+    <div class="gold-rule"></div>
+
+    <div class="set-group">
+      <label class="lbl">AI機能のAPIキー（Google AI Studio）</label>
+      <div class="sec-note" style="margin:0 0 10px">
+        英文の生成・添削・会話に使う無料キーです。
+        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>
+        を開き、Googleアカウントでログイン →「APIキーを作成」→ コピーして下に貼り付けてください。
+        キーは<b>この端末の中にだけ</b>保存されます。
+      </div>
+      <div style="display:flex;gap:8px">
+        <input type="password" id="apiKeyInput" placeholder="AIza… で始まるキー" autocomplete="off">
+        <button class="btn ghost sm" id="btnKeyEye" style="flex-shrink:0" aria-label="表示切替">表示</button>
+      </div>
+      <button class="btn wide" id="btnSaveKey" style="margin-top:10px">キーを保存</button>
+      <div class="sec-note" id="keyStatus" style="margin-top:8px"></div>
+    </div>
+
+    <div class="set-group">
+      <label class="lbl">データ</label>
+      <div class="sec-note" style="margin:0 0 10px">教材・台本・回答など学習データをすべて消去します（APIキーは残ります）。</div>
+      <button class="btn danger wide" id="btnResetData">学習データを初期化</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ AUDIO MODAL ============ -->
+<div class="modal-bg" id="audioModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="sec-kicker">Listening</div>
+        <div class="sec-title">音声の詳細設定</div>
+      </div>
+      <button class="close-x" data-close="audioModal">✕</button>
+    </div>
+    <div class="gold-rule"></div>
+
+    <div class="warn-box">
+      iPhone / iPadでは、端末の仕様により<b>0.5×より遅くならない</b>場合があります。その場合は下の「文間ポーズ」を長くすると、しっかり聞き取る時間がつくれます。
+    </div>
+
+    <div class="set-group">
+      <div class="range-row">
+        <label class="lbl" style="margin:0">Speed — 再生速度</label>
+        <span class="range-val" id="amRateVal">0.50×</span>
+      </div>
+      <input type="range" id="amRate" min="0.3" max="2" step="0.05" value="0.5">
+      <div class="range-scale"><span>0.3×</span><span>1.0×</span><span>2.0×</span></div>
+    </div>
+
+    <div class="set-group">
+      <div class="range-row">
+        <label class="lbl" style="margin:0">Pause — 文間ポーズ</label>
+        <span class="range-val" id="amGapVal">1.0s</span>
+      </div>
+      <input type="range" id="amGap" min="0" max="3" step="0.25" value="1">
+      <div class="range-scale"><span>なし</span><span>1.5s</span><span>3s</span></div>
+    </div>
+
+    <div class="set-group">
+      <div class="range-row">
+        <label class="lbl" style="margin:0">Pitch — 声の高さ</label>
+        <span class="range-val" id="amPitchVal">1.0</span>
+      </div>
+      <input type="range" id="amPitch" min="0.5" max="1.5" step="0.1" value="1">
+    </div>
+
+    <div class="set-group">
+      <label class="lbl">Voice — 話者</label>
+      <select id="amVoice"></select>
+      <div class="sec-note" style="margin-top:8px">iPhoneでは「設定 → アクセシビリティ → 読み上げコンテンツ → 声 → 英語」で高品質な声（Siri系）を追加できます。</div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ================================================================
+   PEAK ENGLISH — Executive English Training
+   Claude Code original build for Dr. Terada
+   ================================================================ */
+
+/* ---------- Utilities ---------- */
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const store={
+  get(k,d){try{const v=localStorage.getItem(k);return v!==null?v:d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,v)}catch(e){}},
+  del(k){try{localStorage.removeItem(k)}catch(e){}}
+};
+const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function haptic(kind){try{if(navigator.vibrate){navigator.vibrate(kind==='heavy'?[45,40,45]:kind==='med'?40:22)}}catch(e){}}
+let toastTimer=null;
+function toast(msg,type){
+  const t=$('#toast');t.textContent=msg;
+  t.className=type==='err'?'show err':'show';
+  haptic(type==='err'?'heavy':'light');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className='',3200);
+}
+function playSound(kind){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+    const ctx=new AC(),o=ctx.createOscillator(),g=ctx.createGain();
+    if(kind==='correct'){o.type='sine';o.frequency.setValueAtTime(880,ctx.currentTime);o.frequency.setValueAtTime(1108.7,ctx.currentTime+.1);
+      g.gain.setValueAtTime(.22,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.01,ctx.currentTime+.4);
+      o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.4);}
+    else{o.type='square';o.frequency.setValueAtTime(150,ctx.currentTime);
+      g.gain.setValueAtTime(0,ctx.currentTime);g.gain.linearRampToValueAtTime(.1,ctx.currentTime+.02);g.gain.linearRampToValueAtTime(0,ctx.currentTime+.45);
+      o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.5);}
+    setTimeout(()=>{try{ctx.close()}catch(e){}},800);
+  }catch(e){}
+}
+function setBusy(btnSel,labelSel,busyText,idleText,busy){
+  const b=$(btnSel),l=$(labelSel);if(!b||!l)return;
+  b.disabled=busy;
+  l.innerHTML=busy?`<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:15px;height:15px;vertical-align:-3px"><path d="M12 3a9 9 0 109 9"/></svg> ${busyText}`:idleText;
+}
+
+/* ---------- App State ---------- */
+const DEFAULT_S={
+  themeInput:'',topics:['','','','','','',''],cefrLevel:'A2',targetWordCount:200,
+  mainText:'',japaneseText:'',vocabText:'',grammarText:'',quizData:null,
+  speechScript:'',speakScriptLevel:'A2',comicImg:'',
+  prepQuestion:'',prepQuestionJp:'',prepUserAnswer:'',prepFeedback:'',prepCorrected:'',prepModelAnswer:'',
+  roleplaySituation:'',rpLevel:'B1',
+  diaryInput:'',diaryFeedback:null
+};
+let S=(()=>{try{return{...DEFAULT_S,...JSON.parse(store.get('pe_state_v1','{}'))}}catch(e){return{...DEFAULT_S}}})();
+let saveTimer=null;
+function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{
+  try{localStorage.setItem('pe_state_v1',JSON.stringify(S))}
+  catch(e){try{const{comicImg,...rest}=S;localStorage.setItem('pe_state_v1',JSON.stringify(rest))}catch(e2){}}
+},400)}
+
+/* ---------- Gemini API ---------- */
+const TXT_MODEL='gemini-2.5-flash';
+const IMG_MODEL='gemini-2.5-flash-image';
+function apiKey(){return store.get('pe_key','')}
+function requireKey(){
+  if(apiKey())return true;
+  toast('AI機能にはAPIキーが必要です。設定画面で保存してください','err');
+  openModal('settingsModal');
+  return false;
+}
+async function gem({prompt,system,history,json=false,model=TXT_MODEL,retries=3}){
+  const key=apiKey();
+  const body={contents:history?history.map(m=>({role:m.role,parts:[{text:m.text}]})):[{parts:[{text:prompt}]}]};
+  if(system)body.systemInstruction={parts:[{text:system}]};
+  if(json)body.generationConfig={responseMimeType:'application/json'};
+  let delay=1200;
+  for(let i=0;i<retries;i++){
+    try{
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(r.status===400||r.status===401||r.status===403)throw{fatal:true,msg:'APIキーが正しくないようです。設定画面でご確認ください'};
+      if(r.status===429)throw{msg:'AIの利用上限に達しました。1分ほど待って再度お試しください'};
+      if(!r.ok)throw{msg:'通信エラーが発生しました'};
+      const d=await r.json();
+      const txt=d.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('');
+      if(!txt)throw{msg:'AIから応答がありませんでした'};
+      return txt;
+    }catch(e){
+      if(e.fatal||i===retries-1)throw new Error(e.msg||'通信エラーが発生しました。電波状況をご確認ください');
+      await new Promise(res=>setTimeout(res,delay));delay*=2;
+    }
+  }
+}
+function parseJSON(raw){
+  let t=String(raw).replace(/```json/gi,'').replace(/```/g,'').trim();
+  const a=t.indexOf('{'),b=t.lastIndexOf('}'),c=t.indexOf('['),d=t.lastIndexOf(']');
+  try{return JSON.parse(t)}catch(e){}
+  if(c!==-1&&(a===-1||c<a)){try{return JSON.parse(t.slice(c,d+1))}catch(e){}}
+  if(a!==-1){try{return JSON.parse(t.slice(a,b+1))}catch(e){}}
+  throw new Error('AIの応答を読み取れませんでした。もう一度お試しください');
+}
+async function gemImage(prompt){
+  const key=apiKey();
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${IMG_MODEL}:generateContent?key=${key}`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseModalities:['TEXT','IMAGE']}})});
+  if(!r.ok)throw new Error('画像の生成に失敗しました（キーの権限または上限の可能性）');
+  const d=await r.json();
+  const part=d.candidates?.[0]?.content?.parts?.find(p=>p.inlineData);
+  if(!part)throw new Error('画像が返ってきませんでした。もう一度お試しください');
+  return`data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+}
+
+/* ---------- Tabs ---------- */
+function switchTab(id){
+  haptic();
+  $$('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===id));
+  $$('.tabpane').forEach(p=>p.classList.toggle('on',p.id==='pane-'+id));
+  store.set('pe_tab',id);
+  if(id==='listen')lsRender();
+  if(id==='read')wpmRender();
+}
+$$('.tab').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+
+/* ---------- Modals ---------- */
+function openModal(id){$('#'+id).classList.add('show')}
+function closeModal(id){$('#'+id).classList.remove('show')}
+$$('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
+$$('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')}));
+
+/* ================================================================
+   1. TOPIC TAB
+   ================================================================ */
+const LEVELS=['A1','A2','B1','B2','C1','C2'];
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function renderChips(sel,current,onPick){
+  $(sel).innerHTML=LEVELS.map(l=>`<button class="chip ${l===current?'on':''}" data-l="${l}">${l}</button>`).join('');
+  $$(sel+' .chip').forEach(c=>c.addEventListener('click',()=>{haptic();onPick(c.dataset.l)}));
+}
+function renderLevelChips(){renderChips('#levelChips',S.cefrLevel,l=>{S.cefrLevel=l;save();renderLevelChips()})}
+
+let genTopicBusy=false;
+async function genTopics(){
+  if(!S.themeInput.trim())return toast('テーマを入力してください','err');
+  if(!requireKey()||genTopicBusy)return;
+  genTopicBusy=true;setBusy('#btnGenTopics','#btnGenTopicsLabel','考え中…','7日分のお題を作成',true);
+  try{
+    const raw=await gem({prompt:`テーマ「${S.themeInput}」について、英語学習者が学べる具体的なサブトピック（お題）を7つ日本語で作成。JSON形式: { "topics": ["お題1","お題2","お題3","お題4","お題5","お題6","お題7"] }`,json:true});
+    const r=parseJSON(raw);
+    if(!Array.isArray(r.topics)||r.topics.length<7)throw new Error('もう一度お試しください');
+    S.topics=r.topics.slice(0,7);save();renderTopics();
+    toast('7つのお題を作成しました');
+  }catch(e){toast(e.message,'err')}
+  finally{genTopicBusy=false;setBusy('#btnGenTopics','#btnGenTopicsLabel','','7日分のお題を作成',false)}
+}
+async function regenTopic(i,btn){
+  if(!S.themeInput.trim())return toast('テーマを入力してください','err');
+  if(!requireKey())return;
+  btn.disabled=true;btn.textContent='…';
+  try{
+    const raw=await gem({prompt:`テーマ「${S.themeInput}」の新しいお題を1つ日本語で作成。JSON形式: { "topic": "新しいお題" }`,json:true});
+    const r=parseJSON(raw);
+    if(r.topic){S.topics[i]=r.topic;save();renderTopics();toast(DAYS[i]+'のお題を作り直しました')}
+  }catch(e){toast(e.message,'err');btn.disabled=false;btn.textContent='変更'}
+}
+const ARTICLE_JSON_SPEC=`出力は以下のJSON形式に厳密に従ってください: { "english": "本文", "japanese": "日本語訳", "vocabulary": "この英文の重要単語、重要イディオムの解説（日本語で箇条書き）", "grammar": "文法解説（日本語で箇条書き）", "quiz": [{ "question": "英語の内容理解問題1", "options": ["選択肢1","選択肢2","選択肢3","選択肢4","選択肢5"], "answer": 0 }, { "question": "問題2", "options": ["選択肢1","選択肢2","選択肢3","選択肢4","選択肢5"], "answer": 1 }, { "question": "問題3", "options": ["選択肢1","選択肢2","選択肢3","選択肢4","選択肢5"], "answer": 2 }] } (必ずクイズは3問作成してください)`;
+async function genArticle(i,btn){
+  const topic=S.topics[i];
+  if(!topic||!topic.trim())return toast('お題が空です','err');
+  if(!requireKey())return;
+  btn.disabled=true;btn.textContent='生成中…';
+  try{
+    const raw=await gem({prompt:`トピック「${topic}」についてCEFR ${S.cefrLevel} レベルの英語で約${S.targetWordCount}語の記事を作成してください。英文は随所に中学生レベルの英文法（関係代名詞、不定詞、比較、現在完了など）を散りばめた内容にして学習効果を高めてください。${ARTICLE_JSON_SPEC}`,json:true});
+    applyArticle(parseJSON(raw));
+    toast('英文とクイズを作成しました');
+    window.scrollTo(0,0);$('#pane-topic').scrollTop=0;
+  }catch(e){toast(e.message,'err')}
+  finally{btn.disabled=false;btn.textContent='Generate'}
+}
+async function rewriteText(){
+  if(!S.mainText.trim())return toast('本文がありません','err');
+  if(!requireKey())return;
+  const btn=$('#btnRewrite');btn.disabled=true;btn.textContent='書き換え中…';
+  try{
+    const raw=await gem({prompt:`以下の英文をCEFR ${S.cefrLevel} レベルに書き換え。書き換える際は、随所に中学生レベルの英文法（関係代名詞、不定詞、比較、現在完了など）を散りばめた内容にして学習効果を高めてください。${ARTICLE_JSON_SPEC} 元の英文: ${S.mainText}`,json:true});
+    applyArticle(parseJSON(raw));
+    toast(`${S.cefrLevel}レベルに書き換えました`);
+  }catch(e){toast(e.message,'err')}
+  finally{const b=$('#btnRewrite');if(b){b.disabled=false;b.textContent=`本文を${S.cefrLevel}レベルで書き換える`}}
+}
+function applyArticle(r){
+  S.mainText=r.english||'';S.japaneseText=r.japanese||'';
+  S.vocabText=r.vocabulary||'';S.grammarText=r.grammar||'';S.quizData=r.quiz||null;
+  save();
+  $('#mainText').value=S.mainText;
+  lsStop();lsInvalidate();
+  renderArticle();
+}
+function renderTopics(){
+  $('#topicList').innerHTML=S.topics.map((t,i)=>`
+    <div class="day-row">
+      <span class="day-tag">${DAYS[i]}</span>
+      <textarea data-i="${i}" placeholder="お題">${esc(t)}</textarea>
+      <div class="mini">
+        <button class="mini-btn" data-re="${i}">変更</button>
+        <button class="mini-btn navy" data-gen="${i}">Generate</button>
+      </div>
+    </div>`).join('');
+  $$('#topicList textarea').forEach(ta=>ta.addEventListener('input',()=>{S.topics[+ta.dataset.i]=ta.value;save()}));
+  $$('#topicList [data-re]').forEach(b=>b.addEventListener('click',()=>{haptic();regenTopic(+b.dataset.re,b)}));
+  $$('#topicList [data-gen]').forEach(b=>b.addEventListener('click',()=>{haptic('med');genArticle(+b.dataset.gen,b)}));
+}
+function renderArticle(){
+  const A=$('#articleResults');
+  let h='';
+  if(S.mainText.trim()){
+    h+=`<button class="btn ghost wide" id="btnRewrite" style="margin-bottom:14px">本文を${S.cefrLevel}レベルで書き換える</button>`;
+  }
+  if(S.quizData&&S.quizData.length){
+    h+=`<div class="sec" style="margin-top:6px"><div class="sec-kicker">Comprehension</div><div class="sec-title">Quiz</div></div>`;
+    h+=S.quizData.map((q,qi)=>`
+      <div class="quiz-q" data-q="${qi}">
+        <div class="qt"><span class="qnum">QUESTION ${qi+1}</span>${esc(q.question)}</div>
+        ${(q.options||[]).map((o,oi)=>`<button class="opt" data-o="${oi}">${esc(o)}</button>`).join('')}
+      </div>`).join('');
+  }
+  if(S.japaneseText)h+=`<div class="result-block"><h4>Japanese — 日本語訳</h4><div class="body">${esc(S.japaneseText)}</div></div>`;
+  if(S.vocabText)h+=`<div class="result-block"><h4>Vocabulary — 語彙・イディオム</h4><div class="body">${esc(S.vocabText)}</div></div>`;
+  if(S.grammarText)h+=`<div class="result-block"><h4>Grammar — 文法ポイント</h4><div class="body">${esc(S.grammarText)}</div></div>`;
+  A.innerHTML=h;
+  const rw=$('#btnRewrite');if(rw)rw.addEventListener('click',()=>{haptic('med');rewriteText()});
+  $$('#articleResults .quiz-q').forEach(qEl=>{
+    const qi=+qEl.dataset.q,q=S.quizData[qi];let answered=false;
+    qEl.querySelectorAll('.opt').forEach(opt=>opt.addEventListener('click',()=>{
+      if(answered)return;answered=true;
+      const oi=+opt.dataset.o;
+      if(oi===q.answer){opt.classList.add('correct');playSound('correct');haptic('med')}
+      else{opt.classList.add('wrong');qEl.querySelector(`[data-o="${q.answer}"]`).classList.add('reveal');playSound('wrong');haptic('heavy')}
+      qEl.querySelectorAll('.opt').forEach(o=>o.disabled=true);
+    }));
+  });
+}
+
+/* ================================================================
+   2. READ / WPM TAB
+   ================================================================ */
+let wpmTime=0,wpmRun=null;
+function wpmWords(){return S.mainText.trim()?S.mainText.trim().split(/\s+/).length:0}
+function wpmUpd(){
+  $('#stWords').textContent=wpmWords();
+  $('#stTime').textContent=wpmTime;
+  $('#stWpm').textContent=wpmTime>0?((wpmWords()/wpmTime)*60).toFixed(1):'0.0';
+}
+function wpmRender(){
+  $('#wpmText').textContent=S.mainText.trim()||'Topicタブで英文を作成すると、ここに表示されます。';
+  wpmUpd();
+}
+$('#wpmStart').addEventListener('click',()=>{haptic('med');if(wpmRun)return;wpmRun=setInterval(()=>{wpmTime++;wpmUpd()},1000)});
+$('#wpmStop').addEventListener('click',()=>{haptic('med');clearInterval(wpmRun);wpmRun=null;wpmUpd()});
+$('#wpmReset').addEventListener('click',()=>{haptic();clearInterval(wpmRun);wpmRun=null;wpmTime=0;wpmUpd()});
+
+/* ================================================================
+   3. LISTEN TAB — sentence-based engine (0.3x + gap + tap-to-seek)
+   ================================================================ */
+const LS={
+  sents:[],idx:0,session:0,playing:false,paused:false,waiting:false,
+  rate:parseFloat(store.get('pe_rate','0.5')),
+  gap:parseFloat(store.get('pe_gap','1')),
+  pitch:parseFloat(store.get('pe_pitch','1')),
+  voiceName:store.get('pe_voice',''),
+  loop:store.get('pe_loop','0')==='1',
+  lastBeat:0,gapTimer:null,renderedText:null,voices:[],wakeLock:null
+};
+const SPEED_PRESETS=[0.3,0.5,0.7,1.0,1.5];
+
+function lsLoadVoices(){
+  try{
+    const vs=window.speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith('en'));
+    if(vs.length){LS.voices=vs;lsRenderVoiceSelect()}
+  }catch(e){}
+}
+function lsPickVoice(){
+  const vs=LS.voices;
+  return vs.find(v=>v.name===LS.voiceName)
+    ||vs.find(v=>/samantha/i.test(v.name))
+    ||vs.find(v=>v.lang==='en-US')||vs[0]||null;
+}
+function lsSplit(text){
+  const out=[];
+  try{
+    if(window.Intl&&Intl.Segmenter){
+      for(const seg of new Intl.Segmenter('en',{granularity:'sentence'}).segment(text)){
+        if(seg.segment.trim())out.push(seg.segment.trim());
+      }
+      return out;
+    }
+  }catch(e){}
+  const m=text.match(/[^.!?]+[.!?]*\s*/g);
+  return m?m.map(s=>s.trim()).filter(Boolean):[text.trim()];
+}
+function lsInvalidate(){LS.renderedText=null}
+function lsRender(){
+  if(LS.renderedText===S.mainText)return;
+  lsStop();
+  LS.renderedText=S.mainText;
+  LS.sents=S.mainText.trim()?lsSplit(S.mainText):[];
+  LS.idx=0;
+  const R=$('#lsReader');
+  if(!LS.sents.length){
+    R.innerHTML=`<div style="font-family:var(--sans);font-size:13px;color:var(--muted);text-align:center;padding:40px 10px;line-height:2">まだ英文がありません。<br>Topicタブで教材を作成してください。</div>`;
+  }else{
+    R.innerHTML=LS.sents.map((s,i)=>`<span class="sent" data-i="${i}">${esc(s)}</span> `).join('');
+    R.querySelectorAll('.sent').forEach(el=>el.addEventListener('click',()=>{haptic();lsPlayFrom(+el.dataset.i)}));
+  }
+  lsUpdPos();
+}
+function lsUpdPos(){
+  $('#lsPos').textContent=LS.sents.length?`${Math.min(LS.idx+1,LS.sents.length)} / ${LS.sents.length}`:'— / —';
+  $('#lsRateDisp').textContent=LS.rate.toFixed(2).replace(/0$/,'')+'×';
+}
+function lsHighlight(){
+  $$('#lsReader .sent').forEach(el=>{
+    const i=+el.dataset.i;
+    el.classList.toggle('active',i===LS.idx&&(LS.playing||LS.paused));
+    el.classList.toggle('done',i<LS.idx&&(LS.playing||LS.paused));
+    if(i===LS.idx)el.style.setProperty('--prog',LS.playing?'0%':'0%');
+  });
+  const act=$('#lsReader .sent.active');
+  if(act)act.scrollIntoView({block:'center',behavior:'smooth'});
+}
+function lsClearHl(){$$('#lsReader .sent').forEach(el=>{el.classList.remove('active','done');el.style.removeProperty('--prog')})}
+function lsPlayIcon(playing){
+  $('#lsPlayIcon').innerHTML=playing
+    ?'<path d="M7 5.5h3.4v13H7zM13.6 5.5H17v13h-3.6z"/>'
+    :'<path d="M8 5.6v12.8a.8.8 0 001.23.67l10-6.4a.8.8 0 000-1.34l-10-6.4A.8.8 0 008 5.6z"/>';
+}
+async function lsWake(on){
+  try{
+    if(on&&'wakeLock'in navigator&&!LS.wakeLock){LS.wakeLock=await navigator.wakeLock.request('screen');LS.wakeLock.addEventListener('release',()=>{LS.wakeLock=null})}
+    else if(!on&&LS.wakeLock){await LS.wakeLock.release();LS.wakeLock=null}
+  }catch(e){LS.wakeLock=null}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&LS.playing)lsWake(true)});
+
+function lsSpeak(){
+  const s=LS.sents[LS.idx];
+  if(!s)return lsFinish();
+  const my=++LS.session;
+  clearTimeout(LS.gapTimer);LS.waiting=false;
+  try{window.speechSynthesis.cancel()}catch(e){}
+  const u=new SpeechSynthesisUtterance(s);
+  u.rate=LS.rate;u.pitch=LS.pitch;
+  if(!LS.voices.length)lsLoadVoices();
+  const v=lsPickVoice();
+  if(v){u.voice=v;u.lang=v.lang}else{u.lang='en-US'}
+  u.onstart=()=>{if(my===LS.session)LS.lastBeat=Date.now()};
+  u.onboundary=e=>{
+    if(my!==LS.session)return;
+    LS.lastBeat=Date.now();
+    const act=$('#lsReader .sent.active');
+    if(act){
+      let end=e.charIndex;while(end<s.length&&!/\s/.test(s[end]))end++;
+      act.style.setProperty('--prog',Math.min(100,(end/s.length)*100)+'%');
+    }
+  };
+  u.onend=()=>{if(my===LS.session)lsAdvance()};
+  u.onerror=()=>{if(my===LS.session)lsAdvance()};
+  LS.playing=true;LS.paused=false;LS.lastBeat=Date.now();
+  lsPlayIcon(true);lsHighlight();lsUpdPos();lsWake(true);
+  try{window.speechSynthesis.speak(u)}catch(e){toast('再生できませんでした','err');lsStop()}
+}
+function lsAdvance(){
+  if(LS.idx<LS.sents.length-1){
+    LS.idx++;lsUpdPos();
+    const wait=Math.max(60,LS.gap*1000);
+    LS.waiting=true;LS.lastBeat=Date.now();
+    const my=LS.session;
+    LS.gapTimer=setTimeout(()=>{if(my===LS.session&&LS.playing)lsSpeak()},wait);
+    lsHighlight();
+  }else lsFinish();
+}
+function lsFinish(){
+  if(LS.loop&&LS.sents.length){
+    LS.idx=0;LS.waiting=true;
+    const my=LS.session;
+    LS.gapTimer=setTimeout(()=>{if(my===LS.session&&LS.playing)lsSpeak()},1200);
+  }else lsStop();
+}
+function lsPlayFrom(i){
+  if(!LS.sents.length)return toast('Topicタブで英文を作成してください','err');
+  LS.idx=Math.max(0,Math.min(i,LS.sents.length-1));
+  lsSpeak();
+}
+function lsPause(){
+  LS.session++;clearTimeout(LS.gapTimer);LS.waiting=false;
+  try{window.speechSynthesis.cancel()}catch(e){}
+  LS.playing=false;LS.paused=true;
+  lsPlayIcon(false);lsWake(false);
+}
+function lsStop(){
+  LS.session++;clearTimeout(LS.gapTimer);LS.waiting=false;
+  try{window.speechSynthesis.cancel()}catch(e){}
+  LS.playing=false;LS.paused=false;LS.idx=0;
+  lsPlayIcon(false);lsClearHl();lsUpdPos();lsWake(false);
+}
+function lsStep(d){
+  if(!LS.sents.length)return;
+  LS.idx=Math.max(0,Math.min(LS.idx+d,LS.sents.length-1));
+  if(LS.playing)lsSpeak();else{LS.paused=true;lsHighlight();lsUpdPos()}
+}
+setInterval(()=>{
+  if(!LS.playing||LS.waiting)return;
+  try{
+    if(!window.speechSynthesis.speaking&&!window.speechSynthesis.pending&&Date.now()-LS.lastBeat>4000)lsSpeak();
+  }catch(e){}
+},1500);
+
+$('#lsPlay').addEventListener('click',()=>{
+  haptic('med');
+  if(LS.playing)lsPause();
+  else if(LS.paused)lsSpeak();
+  else lsPlayFrom(0);
+});
+$('#lsStop').addEventListener('click',()=>{haptic('med');lsStop()});
+$('#lsPrev').addEventListener('click',()=>{haptic();lsStep(-1)});
+$('#lsNext').addEventListener('click',()=>{haptic();lsStep(1)});
+$('#lsRepeat').addEventListener('click',()=>{haptic();if(LS.sents.length){lsSpeak()}});
+$('#lsLoop').addEventListener('click',()=>{
+  haptic();LS.loop=!LS.loop;store.set('pe_loop',LS.loop?'1':'0');
+  $('#lsLoop').classList.toggle('on',LS.loop);
+});
+$('#lsVoiceBtn').addEventListener('click',()=>{haptic();openModal('audioModal')});
+$('#lsGapBtn').addEventListener('click',()=>{haptic();openModal('audioModal')});
+
+function lsSetRate(r){
+  LS.rate=r;store.set('pe_rate',String(r));
+  $('#amRate').value=r;$('#amRateVal').textContent=r.toFixed(2).replace(/0$/,'')+'×';
+  lsRenderSpeedPills();lsUpdPos();
+  if(LS.playing)lsSpeak();
+}
+function lsRenderSpeedPills(){
+  $('#lsSpeedPills').innerHTML=SPEED_PRESETS.map(p=>
+    `<button class="pill ${Math.abs(LS.rate-p)<.01?'on':''}" data-r="${p}">${p.toFixed(1)}×</button>`).join('');
+  $$('#lsSpeedPills .pill').forEach(b=>b.addEventListener('click',()=>{haptic();lsSetRate(parseFloat(b.dataset.r))}));
+}
+function lsRenderVoiceSelect(){
+  const sel=$('#amVoice');
+  const eff=lsPickVoice();
+  sel.innerHTML=LS.voices.length
+    ?LS.voices.map(v=>`<option value="${esc(v.name)}" ${(eff&&v.name===eff.name)?'selected':''}>${esc(v.name)} (${esc(v.lang)})</option>`).join('')
+    :'<option value="">端末の標準音声</option>';
+}
+$('#amRate').addEventListener('input',e=>{
+  const r=parseFloat(e.target.value);
+  LS.rate=r;store.set('pe_rate',String(r));
+  $('#amRateVal').textContent=r.toFixed(2).replace(/0$/,'')+'×';
+  lsRenderSpeedPills();lsUpdPos();
+});
+$('#amRate').addEventListener('change',()=>{if(LS.playing)lsSpeak()});
+$('#amGap').addEventListener('input',e=>{
+  LS.gap=parseFloat(e.target.value);store.set('pe_gap',String(LS.gap));
+  $('#amGapVal').textContent=LS.gap.toFixed(2).replace(/\.?0+$/,'')+'s';
+  $('#lsGapDisp').textContent=LS.gap.toFixed(1)+'s';
+});
+$('#amPitch').addEventListener('input',e=>{
+  LS.pitch=parseFloat(e.target.value);store.set('pe_pitch',String(LS.pitch));
+  $('#amPitchVal').textContent=LS.pitch.toFixed(1);
+});
+$('#amPitch').addEventListener('change',()=>{if(LS.playing)lsSpeak()});
+$('#amVoice').addEventListener('change',e=>{
+  LS.voiceName=e.target.value;store.set('pe_voice',LS.voiceName);
+  if(LS.playing)lsSpeak();
+});
+try{
+  window.speechSynthesis.onvoiceschanged=lsLoadVoices;
+  lsLoadVoices();
+}catch(e){}
+
+/* ================================================================
+   4. SPEECH TAB
+   ================================================================ */
+function renderSpLevel(){renderChips('#spLevelChips',S.speakScriptLevel,l=>{S.speakScriptLevel=l;save();renderSpLevel()})}
+$('#btnGenScript').addEventListener('click',async()=>{
+  haptic('med');
+  if(!S.mainText.trim())return toast('Topicタブで教材の英文を作成してください','err');
+  if(!requireKey())return;
+  setBusy('#btnGenScript','#btnGenScriptLabel','作成中…','教材から1分スピーチ台本を作成',true);
+  try{
+    const t=await gem({prompt:`以下の英文の内容をもとに、1分間で話せる英語のスピーチ台本（約100〜130語程度）を作成してください。ターゲットレベルは CEFR ${S.speakScriptLevel} です。出力は英語の台本のみにしてください。Markdown等の装飾は不要です。元の英文: ${S.mainText}`});
+    S.speechScript=t.trim();save();
+    $('#speechScript').value=S.speechScript;
+    toast('スピーチ台本を作成しました');
+  }catch(e){toast(e.message,'err')}
+  finally{setBusy('#btnGenScript','#btnGenScriptLabel','','教材から1分スピーチ台本を作成',false)}
+});
+$('#speechScript').addEventListener('input',e=>{S.speechScript=e.target.value;save()});
+
+function renderComic(){
+  $('#comicArea').innerHTML=S.comicImg?`<img class="comic-img" src="${S.comicImg}" alt="4コマ画像">`:'';
+}
+$('#btnGenComic').addEventListener('click',async()=>{
+  haptic('med');
+  if(!S.speechScript.trim())return toast('先にStep 1で台本を作成してください','err');
+  if(!requireKey())return;
+  setBusy('#btnGenComic','#btnGenComicLabel','描いています…（30秒ほど）','4コマ画像を生成',true);
+  try{
+    const rawScenes=await gem({prompt:`以下のスピーチ台本を、文字なしの4コマ漫画にするための4つの視覚的なシーン（主人公の無言の行動と情景のみ）に要約してください。条件: JSONの配列(文字列4つ)のみを出力すること。重要: 各シーンは英語の短い物理的な動作の描写にし、セリフ、会話、看板、文字などの概念を一切含めないこと。台本: ${S.speechScript}`,json:true});
+    let scenes;try{scenes=parseJSON(rawScenes)}catch(e){scenes=['Scene 1','Scene 2','Scene 3','Scene 4']}
+    if(!Array.isArray(scenes))scenes=['Scene 1','Scene 2','Scene 3','Scene 4'];
+    const img=await gemImage(`A single square image containing a 4-panel story illustration arranged in a 2x2 grid, separated by thin gold lines on an ivory background. Elegant minimal flat illustration style, sophisticated muted palette of navy blue, antique gold, sage green and cream. The same one adult protagonist appears in all 4 panels and MUST look identical in each.
+Panel 1 (top-left): ${scenes[0]||'Scene 1'}.
+Panel 2 (top-right): ${scenes[1]||'Scene 2'}.
+Panel 3 (bottom-left): ${scenes[2]||'Scene 3'}.
+Panel 4 (bottom-right): ${scenes[3]||'Scene 4'}.
+Write small elegant numerals 1, 2, 3, 4 in a corner of each respective panel. ABSOLUTELY NO OTHER TEXT: no words, no letters, no speech bubbles, no signs. Completely textless except the four small numerals.`);
+    S.comicImg=img;save();renderComic();
+    toast('4コマ画像を作成しました');
+  }catch(e){toast(e.message,'err')}
+  finally{setBusy('#btnGenComic','#btnGenComicLabel','','4コマ画像を生成',false)}
+});
+
+/* --- recording --- */
+let recState={rec:null,chunks:[],timer:null,sec:0,recog:null,transcript:'',audioUrl:null,recording:false};
+function recFmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+async function recStart(){
+  if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia){
+    return toast('録音はアプリ公開版（https）で利用できます','err');
+  }
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    recState.chunks=[];recState.sec=0;recState.transcript='';
+    if(recState.audioUrl){URL.revokeObjectURL(recState.audioUrl);recState.audioUrl=null}
+    $('#recResult').innerHTML='';
+    const mime=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'';
+    const mr=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);
+    recState.rec=mr;
+    mr.ondataavailable=e=>{if(e.data.size)recState.chunks.push(e.data)};
+    mr.onstop=()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      recState.audioUrl=URL.createObjectURL(new Blob(recState.chunks,{type:mime||'audio/webm'}));
+      renderRecResult();
+    };
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(SR){
+      const rg=new SR();rg.continuous=true;rg.interimResults=true;rg.lang='en-US';
+      rg.onresult=ev=>{
+        let fin='';
+        for(let i=ev.resultIndex;i<ev.results.length;i++)if(ev.results[i].isFinal)fin+=ev.results[i][0].transcript+' ';
+        if(fin)recState.transcript+=fin;
+      };
+      try{rg.start();recState.recog=rg}catch(e){}
+    }
+    mr.start();
+    recState.recording=true;
+    $('#btnRec').classList.add('rec');
+    $('#recIcon').innerHTML='<rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor" stroke="none"/>';
+    $('#recHint').textContent='録音中… もう一度押すと停止';
+    recState.timer=setInterval(()=>{recState.sec++;$('#recTimer').textContent=recFmt(recState.sec)},1000);
+    haptic('heavy');
+  }catch(e){toast('マイクを使用できませんでした。ブラウザのマイク許可をご確認ください','err')}
+}
+function recStop(){
+  try{if(recState.rec&&recState.rec.state!=='inactive')recState.rec.stop()}catch(e){}
+  try{if(recState.recog)recState.recog.stop()}catch(e){}
+  clearInterval(recState.timer);
+  recState.recording=false;
+  $('#btnRec').classList.remove('rec');
+  $('#recIcon').innerHTML='<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21M8.5 21h7"/>';
+  $('#recHint').textContent='マイクボタンを押して1分間スピーチ';
+  haptic('heavy');
+}
+$('#btnRec').addEventListener('click',()=>recState.recording?recStop():recStart());
+function renderRecResult(){
+  $('#recResult').innerHTML=`
+    <div class="card fade">
+      <label class="lbl">Your Recording — 振り返り</label>
+      <audio src="${recState.audioUrl}" controls style="width:100%;margin-bottom:10px"></audio>
+      <textarea id="recTranscript" rows="5" placeholder="話した内容の文字起こし（自動認識。手直しOK）">${esc(recState.transcript.trim())}</textarea>
+      <button class="btn gold wide" id="btnEvalSpeech" style="margin-top:10px"><span id="btnEvalSpeechLabel">AI添削を受ける</span></button>
+    </div>
+    <div id="speechFeedback"></div>`;
+  $('#recTranscript').addEventListener('input',e=>{recState.transcript=e.target.value});
+  $('#btnEvalSpeech').addEventListener('click',async()=>{
+    haptic('med');
+    const tr=$('#recTranscript').value.trim();
+    if(!tr)return toast('文字起こしが空です。話した内容を入力してください','err');
+    if(!requireKey())return;
+    setBusy('#btnEvalSpeech','#btnEvalSpeechLabel','分析中…','AI添削を受ける',true);
+    try{
+      let fb=await gem({prompt:`あなたは英語の先生です。以下の生徒の1分間スピーチの文字起こしを読み、良かった点と、文法・自然な表現のための改善点を日本語でフィードバックしてください。Markdown記号（*や#など）は一切使用せず、プレーンテキストで出力してください。\n\nスピーチ内容:\n"${tr}"`});
+      fb=fb.replace(/[*#`_]/g,'');
+      $('#speechFeedback').innerHTML=`<div class="result-block fade"><h4>AI Feedback — 講評</h4><div class="body">${esc(fb)}</div></div>`;
+    }catch(e){toast(e.message,'err')}
+    finally{setBusy('#btnEvalSpeech','#btnEvalSpeechLabel','','AI添削を受ける',false)}
+  });
+}
+
+/* ================================================================
+   5. PREP TAB
+   ================================================================ */
+let showJp=false;
+function renderPrep(){
+  const qa=$('#prepQArea');
+  if(S.prepQuestion){
+    qa.innerHTML=`
+      <div class="result-block" style="margin-bottom:0">
+        <h4>Question</h4>
+        <div class="body en" style="font-size:17px">${esc(S.prepQuestion)}</div>
+        <button class="mini-btn" id="btnJpToggle" style="margin-top:10px">${showJp?'日本語訳を隠す':'日本語訳を見る'}</button>
+        <div id="jpQ" class="${showJp?'':'hidden'}" style="margin-top:9px;font-size:13px;color:var(--muted);line-height:1.8">${esc(S.prepQuestionJp)}</div>
+      </div>`;
+    $('#btnJpToggle').addEventListener('click',()=>{haptic();showJp=!showJp;renderPrep()});
+    $('#prepAnswerCard').classList.remove('hidden');
+  }else{qa.innerHTML='';$('#prepAnswerCard').classList.add('hidden')}
+  const pr=$('#prepResult');
+  if(S.prepFeedback){
+    pr.innerHTML=`
+      <div class="result-block fade"><h4>Corrected — 修正版</h4><div class="body en">${esc(S.prepCorrected)}</div></div>
+      <div class="result-block fade"><h4>Feedback — 講評</h4><div class="body">${esc(S.prepFeedback)}</div></div>
+      <div class="result-block fade"><h4>Model Answer — 模範解答（PREP）</h4><div class="body en">${esc(S.prepModelAnswer)}</div></div>`;
+  }else pr.innerHTML='';
+}
+$('#btnGenQ').addEventListener('click',async()=>{
+  haptic('med');
+  if(!S.mainText.trim())return toast('Topicタブで教材の英文を作成してください','err');
+  if(!requireKey())return;
+  setBusy('#btnGenQ','#btnGenQLabel','考え中…','質問をもらう',true);
+  try{
+    const raw=await gem({prompt:`以下の英文のテーマに関連しつつ、読者の仕事観や経験を引き出すオープンクエスチョン（英語）を1つ作成してください。ターゲットレベル CEFR ${S.cefrLevel}。\nJSONフォーマット:\n{ "question": "英語の質問", "japanese": "日本語訳" }\n元の英文: ${S.mainText}`,json:true});
+    const r=parseJSON(raw);
+    Object.assign(S,{prepQuestion:r.question||'',prepQuestionJp:r.japanese||'',prepUserAnswer:'',prepFeedback:'',prepCorrected:'',prepModelAnswer:''});
+    save();showJp=false;$('#prepAnswer').value='';renderPrep();
+    toast('質問を作成しました');
+  }catch(e){toast(e.message,'err')}
+  finally{setBusy('#btnGenQ','#btnGenQLabel','','質問をもらう',false)}
+});
+$('#prepAnswer').addEventListener('input',e=>{S.prepUserAnswer=e.target.value;save()});
+$('#btnEvalPrep').addEventListener('click',async()=>{
+  haptic('med');
+  if(!S.prepUserAnswer.trim())return toast('回答を入力してください','err');
+  if(!requireKey())return;
+  setBusy('#btnEvalPrep','#btnEvalPrepLabel','添削中…','添削してもらう',true);
+  try{
+    const raw=await gem({prompt:`生徒の目標レベル CEFR ${S.cefrLevel}。\n質問: ${S.prepQuestion}\n生徒の回答: ${S.prepUserAnswer}\nJSONフォーマット:\n{ "feedback": "日本語でのフィードバック（PREP法の評価含む）", "corrected_answer": "修正した文章", "model_answer": "AIの模範解答(PREP法)" }`,json:true});
+    const r=parseJSON(raw);
+    Object.assign(S,{prepFeedback:r.feedback||'',prepCorrected:r.corrected_answer||'',prepModelAnswer:r.model_answer||''});
+    save();renderPrep();
+    toast('添削が完了しました');
+  }catch(e){toast(e.message,'err')}
+  finally{setBusy('#btnEvalPrep','#btnEvalPrepLabel','','添削してもらう',false)}
+});
+
+/* ================================================================
+   6. TALK (ROLEPLAY) TAB
+   ================================================================ */
+let rpMsgs=[],rpBusy=false;
+function renderRpLevel(){renderChips('#rpLevelChips',S.rpLevel,l=>{S.rpLevel=l;save();renderRpLevel()})}
+function rpSystem(){return`シチュエーション: ${S.roleplaySituation}\nユーザーレベル: CEFR ${S.rpLevel}\n条件: ロールプレイ役で自然な英語で返答。途中で1回だけ日本語でより自然な表現のアドバイスをする。終了の合図で次回練習すべきフレーズを5つ提示。`}
+function rpRender(){
+  const box=$('#chatBox');
+  box.innerHTML=rpMsgs.filter(m=>!m.hidden).map(m=>`<div class="msg ${m.role==='user'?'me':'ai'}">${esc(m.text)}</div>`).join('')
+    +(rpBusy?'<div class="typing"><i></i><i></i><i></i></div>':'');
+  box.scrollTop=box.scrollHeight;
+}
+async function rpCall(){
+  rpBusy=true;rpRender();
+  try{
+    const reply=await gem({system:rpSystem(),history:rpMsgs.map(m=>({role:m.role,text:m.text}))});
+    rpMsgs.push({role:'model',text:reply});
+  }catch(e){toast(e.message,'err')}
+  rpBusy=false;rpRender();
+}
+$('#rpSituation').addEventListener('input',e=>{S.roleplaySituation=e.target.value;save()});
+$('#btnStartRp').addEventListener('click',async()=>{
+  haptic('med');
+  if(!S.roleplaySituation.trim())return toast('場面設定を入力してください','err');
+  if(!requireKey())return;
+  setBusy('#btnStartRp','#btnStartRpLabel','準備中…','会話を始める',true);
+  rpMsgs=[{role:'user',text:'[システム: ロールプレイを開始し、あなたから最初の発言をしてください。]',hidden:true}];
+  $('#rpLevelDisp').textContent=S.rpLevel;
+  try{
+    const reply=await gem({system:rpSystem(),history:rpMsgs.map(m=>({role:m.role,text:m.text}))});
+    rpMsgs.push({role:'model',text:reply});
+    $('#talkSetup').classList.add('hidden');
+    $('#talkLive').classList.remove('hidden');
+    rpRender();
+  }catch(e){toast(e.message,'err')}
+  finally{setBusy('#btnStartRp','#btnStartRpLabel','','会話を始める',false)}
+});
+$('#btnSend').addEventListener('click',async()=>{
+  const inp=$('#chatInput'),txt=inp.value.trim();
+  if(!txt||rpBusy)return;
+  haptic('med');
+  rpMsgs.push({role:'user',text:txt});inp.value='';
+  await rpCall();
+});
+$('#chatInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey&&window.innerWidth>700){e.preventDefault();$('#btnSend').click()}
+});
+$('#btnFinishRp').addEventListener('click',async()=>{
+  if(rpBusy)return;
+  haptic('med');
+  rpMsgs.push({role:'user',text:"Let's finish the roleplay."});
+  rpMsgs.push({role:'user',text:'[システム: ロールプレイを終了し、練習すべきフレーズを5つ提示してください。]',hidden:true});
+  await rpCall();
+  const back=document.createElement('button');
+  back.className='btn ghost wide';back.textContent='場面設定に戻る';back.style.margin='4px 16px 14px';back.style.width='calc(100% - 32px)';
+  back.addEventListener('click',()=>{rpMsgs=[];$('#talkLive').classList.add('hidden');$('#talkSetup').classList.remove('hidden');back.remove()});
+  $('#talkLive').appendChild(back);
+});
+
+/* ================================================================
+   7. WRITE TAB
+   ================================================================ */
+function renderWrite(){
+  const w=$('#writeResult'),f=S.diaryFeedback;
+  if(!f){w.innerHTML='';return}
+  w.innerHTML=`
+    <div class="result-block fade"><h4>Grammar — 文法チェック</h4><div class="body">${esc(f.grammar_corrections||'')}</div></div>
+    <div class="result-block fade"><h4>Natural — 自然なネイティブ表現</h4><div class="body en">${esc(f.natural_version||'')}</div></div>
+    <div class="result-block fade"><h4>Formal — ビジネス・フォーマル表現</h4><div class="body en">${esc(f.formal_version||'')}</div></div>
+    <div class="result-block fade"><h4>Teacher's Note — 先生から</h4><div class="body">${esc(f.encouragement||'')}</div></div>`;
+}
+$('#diaryInput').addEventListener('input',e=>{S.diaryInput=e.target.value;save()});
+$('#btnPolish').addEventListener('click',async()=>{
+  haptic('med');
+  if(!S.diaryInput.trim())return toast('英文を入力してください','err');
+  if(!requireKey())return;
+  setBusy('#btnPolish','#btnPolishLabel','添削中…','添削・推敲してもらう',true);
+  try{
+    const raw=await gem({prompt:`以下のユーザーが書いた英文（日記やエッセイなど）を添削し、学習のためのフィードバックを提供してください。\n出力は必ず以下のJSON形式のみにしてください。\n{\n  "grammar_corrections": "文法上の誤りの指摘と修正理由（日本語で優しく解説）",\n  "natural_version": "より自然でネイティブらしい表現に書き換えた英文",\n  "formal_version": "ビジネスやフォーマルな場で使える丁寧な表現に書き換えた英文",\n  "encouragement": "学習者への励ましの言葉やポジティブなフィードバック（日本語で）"\n}\n\nユーザーの英文:\n${S.diaryInput}`,json:true});
+    S.diaryFeedback=parseJSON(raw);save();renderWrite();
+    toast('添削が完了しました');
+  }catch(e){toast(e.message,'err')}
+  finally{setBusy('#btnPolish','#btnPolishLabel','','添削・推敲してもらう',false)}
+});
+
+/* ================================================================
+   SETTINGS
+   ================================================================ */
+$('#btnSettings').addEventListener('click',()=>{haptic();refreshKeyStatus();openModal('settingsModal')});
+function refreshKeyStatus(){
+  const k=apiKey();
+  $('#keyStatus').innerHTML=k
+    ?`✓ 保存済み（…${esc(k.slice(-4))}）— AI機能が使えます`
+    :'キーは未設定です。上の手順で無料キーを作成してください。';
+}
+$('#btnKeyEye').addEventListener('click',()=>{
+  const i=$('#apiKeyInput');
+  i.type=i.type==='password'?'text':'password';
+  $('#btnKeyEye').textContent=i.type==='password'?'表示':'隠す';
+});
+$('#btnSaveKey').addEventListener('click',()=>{
+  haptic('med');
+  const v=$('#apiKeyInput').value.trim();
+  if(!v)return toast('キーを入力してください','err');
+  store.set('pe_key',v);
+  $('#apiKeyInput').value='';
+  refreshKeyStatus();
+  toast('APIキーを保存しました。AI機能が使えます');
+});
+let resetArmed=false;
+$('#btnResetData').addEventListener('click',()=>{
+  if(!resetArmed){
+    resetArmed=true;haptic('heavy');
+    $('#btnResetData').textContent='本当に消去しますか？（もう一度押す）';
+    setTimeout(()=>{resetArmed=false;$('#btnResetData').textContent='学習データを初期化'},3500);
+    return;
+  }
+  S={...DEFAULT_S};
+  store.set('pe_state_v1',JSON.stringify(S));
+  lsStop();lsInvalidate();rpMsgs=[];
+  initFields();
+  closeModal('settingsModal');
+  switchTab('topic');
+  toast('学習データを初期化しました');
+  resetArmed=false;$('#btnResetData').textContent='学習データを初期化';
+});
+
+/* ================================================================
+   INIT
+   ================================================================ */
+function initFields(){
+  $('#themeInput').value=S.themeInput;
+  $('#mainText').value=S.mainText;
+  $('#wcRange').value=S.targetWordCount;$('#wcVal').textContent=S.targetWordCount;
+  $('#speechScript').value=S.speechScript;
+  $('#prepAnswer').value=S.prepUserAnswer;
+  $('#rpSituation').value=S.roleplaySituation;
+  $('#diaryInput').value=S.diaryInput;
+  renderLevelChips();renderSpLevel();renderRpLevel();
+  renderTopics();renderArticle();renderComic();renderPrep();renderWrite();
+  $('#amRate').value=LS.rate;$('#amRateVal').textContent=LS.rate.toFixed(2).replace(/0$/,'')+'×';
+  $('#amGap').value=LS.gap;$('#amGapVal').textContent=LS.gap.toFixed(2).replace(/\.?0+$/,'')+'s';
+  $('#lsGapDisp').textContent=LS.gap.toFixed(1)+'s';
+  $('#amPitch').value=LS.pitch;$('#amPitchVal').textContent=LS.pitch.toFixed(1);
+  $('#lsLoop').classList.toggle('on',LS.loop);
+  lsRenderSpeedPills();lsRenderVoiceSelect();lsUpdPos();
+}
+$('#themeInput').addEventListener('input',e=>{S.themeInput=e.target.value;save()});
+$('#mainText').addEventListener('input',e=>{
+  S.mainText=e.target.value;save();lsInvalidate();
+  S.japaneseText='';S.vocabText='';S.grammarText='';S.quizData=null;
+});
+$('#mainText').addEventListener('change',()=>renderArticle());
+$('#wcRange').addEventListener('input',e=>{S.targetWordCount=+e.target.value;$('#wcVal').textContent=S.targetWordCount;save()});
+$('#btnGenTopics').addEventListener('click',()=>{haptic('med');genTopics()});
+
+window.addEventListener('pagehide',()=>{try{window.speechSynthesis.cancel()}catch(e){}});
+if('serviceWorker'in navigator&&location.protocol==='https:'){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
+}
+initFields();
+switchTab(store.get('pe_tab','topic'));
+</script>
+</body>
+</html>

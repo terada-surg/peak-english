@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#16203A"/>
+  <rect x="26" y="26" width="460" height="460" fill="none" stroke="#B08D4A" stroke-width="3"/>
+  <rect x="40" y="40" width="432" height="432" fill="none" stroke="#B08D4A" stroke-width="1.5" opacity="0.55"/>
+  <circle cx="256" cy="212" r="92" fill="none" stroke="#B08D4A" stroke-width="3"/>
+  <path d="M196 244 L232 196 L256 224 L296 172 L316 196" fill="none" stroke="#D5BE8F" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="256" y="374" font-family="Didot, 'Times New Roman', Georgia, serif" font-size="64" letter-spacing="14" fill="#EFE6D2" text-anchor="middle">PEAK</text>
+  <text x="262" y="428" font-family="Didot, 'Times New Roman', Georgia, serif" font-size="34" letter-spacing="16" fill="#B08D4A" text-anchor="middle">ENGLISH</text>
+</svg>
