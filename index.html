@@ -550,6 +550,10 @@ a{color:var(--gold);font-weight:600}
         <span id="btnGenTopicsLabel">7日分のお題を作成</span>
       </button>
       <div id="topicGenErr" class="hidden"></div>
+      <div id="topicToolbar" class="hidden" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px">
+        <span style="font-size:11px;color:var(--muted);letter-spacing:.04em">1週間終わったら、まとめて消して次のテーマへ</span>
+        <button class="btn ghost sm" id="btnClearTopics" style="flex-shrink:0">7日分をクリア</button>
+      </div>
       <div id="topicList" style="margin-top:13px"></div>
     </div>
 
@@ -900,7 +904,7 @@ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{
 },400)}
 
 /* ---------- Gemini API ---------- */
-const APP_VERSION='2026.08.12-6';
+const APP_VERSION='2026.08.12-7';
 // Google retires model ids on its own schedule, and a retired id 404s for
 // newly-created keys well before the published shutdown date. So these are
 // only starting points: discoverModels() asks the key what it can actually
@@ -1118,10 +1122,38 @@ function renderTopics(){
         <button class="mini-btn navy" data-gen="${i}">Generate</button>
       </div>
     </div>`).join('');
-  $$('#topicList textarea').forEach(ta=>ta.addEventListener('input',()=>{S.topics[+ta.dataset.i]=ta.value;save()}));
+  $$('#topicList textarea').forEach(ta=>ta.addEventListener('input',()=>{S.topics[+ta.dataset.i]=ta.value;save();syncTopicToolbar()}));
   $$('#topicList [data-re]').forEach(b=>b.addEventListener('click',()=>{haptic();regenTopic(+b.dataset.re,b)}));
   $$('#topicList [data-gen]').forEach(b=>b.addEventListener('click',()=>{haptic('med');genArticle(+b.dataset.gen,b)}));
+  syncTopicToolbar();
 }
+// Only offer "clear" when there is something to clear.
+function syncTopicToolbar(){
+  const has=S.topics.some(t=>t&&t.trim())||!!(S.themeInput&&S.themeInput.trim());
+  $('#topicToolbar').classList.toggle('hidden',!has);
+}
+// Two taps to clear: this wipes a week of topics, so a stray tap must not do it.
+let clearArmed=false,clearTimer=null;
+function resetClearBtn(){
+  clearArmed=false;clearTimeout(clearTimer);
+  const b=$('#btnClearTopics');b.textContent='7日分をクリア';b.classList.remove('danger');
+}
+$('#btnClearTopics').addEventListener('click',()=>{
+  const b=$('#btnClearTopics');
+  if(!clearArmed){
+    clearArmed=true;haptic('heavy');
+    b.textContent='もう一度押すと消去';b.classList.add('danger');
+    clearTimer=setTimeout(resetClearBtn,3500);
+    return;
+  }
+  resetClearBtn();haptic('med');
+  S.themeInput='';S.topics=['','','','','','',''];save();
+  $('#themeInput').value='';
+  setInlineErr('topicGenErr','');
+  renderTopics();
+  toast('クリアしました。新しいテーマを入力してください');
+  $('#themeInput').focus();
+});
 function renderArticle(){
   const A=$('#articleResults');
   let h='';
@@ -1745,7 +1777,7 @@ function initFields(){
   $('#lsLoop').classList.toggle('on',LS.loop);
   lsRenderSpeedPills();lsRenderVoiceSelect();lsUpdPos();
 }
-$('#themeInput').addEventListener('input',e=>{S.themeInput=e.target.value;save()});
+$('#themeInput').addEventListener('input',e=>{S.themeInput=e.target.value;save();syncTopicToolbar()});
 $('#mainText').addEventListener('input',e=>{
   S.mainText=e.target.value;save();lsInvalidate();
   S.japaneseText='';S.vocabText='';S.grammarText='';S.quizData=null;
