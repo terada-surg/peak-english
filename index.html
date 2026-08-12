@@ -904,7 +904,7 @@ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{
 },400)}
 
 /* ---------- Gemini API ---------- */
-const APP_VERSION='2026.08.12-7';
+const APP_VERSION='2026.08.12-8';
 // Google retires model ids on its own schedule, and a retired id 404s for
 // newly-created keys well before the published shutdown date. So these are
 // only starting points: discoverModels() asks the key what it can actually
@@ -929,6 +929,7 @@ function modelRank(name){
   if(/-\d{2,}$/.test(name))score-=5;     // prefer the unversioned alias
   return score;
 }
+let _rankedText=[],_rankedImage=[];
 async function discoverModels(){
   const key=apiKey();if(!key)return null;
   try{
@@ -939,8 +940,10 @@ async function discoverModels(){
       .filter(m=>(m.supportedGenerationMethods||m.supportedActions||[]).includes('generateContent'))
       .map(m=>String(m.name||'').replace(/^models\//,''))
       .filter(n=>n&&!BAD_MODEL.test(n));
-    const text=usable.filter(n=>!/image/i.test(n)).sort((a,b)=>modelRank(b)-modelRank(a))[0];
-    const image=usable.filter(n=>/image/i.test(n)).sort((a,b)=>modelRank(b)-modelRank(a))[0];
+    const byRank=(a,b)=>modelRank(b)-modelRank(a);
+    _rankedText=usable.filter(n=>!/image/i.test(n)).sort(byRank);
+    _rankedImage=usable.filter(n=>/image/i.test(n)).sort(byRank);
+    const text=_rankedText[0],image=_rankedImage[0];
     if(text)store.set('pe_txt_model',text);
     if(image)store.set('pe_img_model',image);
     return{text:text||null,image:image||null};
@@ -952,44 +955,62 @@ function requireKey(){
   openModal('settingsModal');
   return false;
 }
-async function gem({prompt,system,history,json=false,model=null,retries=3,_healed=false}){
+async function gemCall(m,body,key){
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`,{
+    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(r.ok){
+    const d=await r.json();
+    const txt=d.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('');
+    if(!txt)return{ok:false,status:200,detail:'AIから応答がありませんでした'};
+    return{ok:true,txt};
+  }
+  // Google's own message says whether a 429 is per-minute or per-day, and
+  // which model id died on a 404 — always worth carrying to the surface.
+  let detail='';
+  try{const eb=await r.json();detail=eb?.error?.message||''}catch(_e){}
+  return{ok:false,status:r.status,detail};
+}
+// Best usable model not tried yet. Free-tier quota is counted per model, so
+// after a 429 a different model really does have its own headroom.
+async function nextModel(tried){
+  if(!_rankedText.length)await discoverModels();
+  return _rankedText.find(n=>!tried.includes(n))||null;
+}
+async function gem({prompt,system,history,json=false,model=null}){
   const key=apiKey();
-  const useModel=model||txtModel();
   const body={contents:history?history.map(m=>({role:m.role,parts:[{text:m.text}]})):[{parts:[{text:prompt}]}]};
   if(system)body.systemInstruction={parts:[{text:system}]};
   if(json)body.generationConfig={responseMimeType:'application/json'};
-  let delay=1200;
-  for(let i=0;i<retries;i++){
-    try{
-      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${useModel}:generateContent?key=${key}`,{
-        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-      if(!r.ok){
-        // Surface Google's own error text + status so a failure is diagnosable
-        // from the screen alone, instead of a generic "something went wrong".
-        let detail='';
-        try{const eb=await r.json();detail=eb?.error?.message||''}catch(_e){}
-        // A 404 means this model id died (retired, or never available to this
-        // key). Find a live one and transparently retry rather than dead-ending.
-        if(r.status===404&&!_healed&&!model){
-          const found=await discoverModels();
-          if(found?.text&&found.text!==useModel)
-            return gem({prompt,system,history,json,retries,_healed:true});
-          throw{fatal:true,msg:`使えるAIモデルが見つかりませんでした（エラー404）${detail?'\n詳細: '+detail:''}`};
-        }
-        if(r.status===429)throw{msg:'AIの利用上限に達しました。1分ほど待って再度お試しください'};
-        if(r.status===400||r.status===401||r.status===403)
-          throw{fatal:true,msg:`APIキーをご確認ください（エラー${r.status}）${detail?'\n詳細: '+detail:''}`};
-        throw{msg:`通信エラーが発生しました（エラー${r.status}）${detail?'\n詳細: '+detail:''}`};
-      }
-      const d=await r.json();
-      const txt=d.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('');
-      if(!txt)throw{msg:'AIから応答がありませんでした'};
-      return txt;
-    }catch(e){
-      if(e.fatal||i===retries-1)throw new Error(e.msg||'通信エラーが発生しました。電波状況をご確認ください');
-      await new Promise(res=>setTimeout(res,delay));delay*=2;
+  const tried=[];
+  let m=model||txtModel(),netTries=0,last=null;
+  for(let step=0;step<6;step++){
+    let res;
+    try{res=await gemCall(m,body,key)}
+    catch(e){
+      // Genuine network failure — this one is worth retrying, unlike a 429.
+      if(netTries<2){netTries++;await new Promise(r=>setTimeout(r,1200*netTries));continue}
+      throw new Error('通信できませんでした。電波状況をご確認ください');
     }
+    if(res.ok){
+      if(!model&&m!==txtModel())store.set('pe_txt_model',m);
+      return res.txt;
+    }
+    last=res;tried.push(m);
+    // Retrying the SAME model on 429 just burns more of the quota that is
+    // already exhausted; move to a model with its own quota instead.
+    if((res.status===429||res.status===404)&&!model){
+      const nx=await nextModel(tried);
+      if(nx){m=nx;continue}
+    }
+    if(res.status===400||res.status===401||res.status===403)
+      throw new Error(`APIキーをご確認ください（エラー${res.status}）${res.detail?'\n詳細: '+res.detail:''}`);
+    break;
   }
+  if(last?.status===429)
+    throw new Error(`無料枠の上限に達しました（エラー429）\n使えるモデルをすべて試しました。少し時間をおいてからお試しください。${last.detail?'\n詳細: '+last.detail:''}`);
+  if(last?.status===404)
+    throw new Error(`使えるAIモデルが見つかりませんでした（エラー404）${last.detail?'\n詳細: '+last.detail:''}`);
+  throw new Error(`通信エラーが発生しました${last?.status?`（エラー${last.status}）`:''}${last?.detail?'\n詳細: '+last.detail:''}`);
 }
 function parseJSON(raw){
   let t=String(raw).replace(/```json/gi,'').replace(/```/g,'').trim();
@@ -999,21 +1020,27 @@ function parseJSON(raw){
   if(a!==-1){try{return JSON.parse(t.slice(a,b+1))}catch(e){}}
   throw new Error('AIの応答を読み取れませんでした。もう一度お試しください');
 }
-async function gemImage(prompt,_healed=false){
+async function gemImage(prompt,tried=[]){
   const key=apiKey();
-  const useModel=imgModel();
+  const useModel=tried.length?tried[tried.length-1]:imgModel();
   const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${useModel}:generateContent?key=${key}`,{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseModalities:['TEXT','IMAGE']}})});
   if(!r.ok){
     let detail='';
     try{const eb=await r.json();detail=eb?.error?.message||''}catch(_e){}
-    if(r.status===404&&!_healed){
-      const found=await discoverModels();
-      if(found?.image&&found.image!==useModel)return gemImage(prompt,true);
+    // Same reasoning as gem(): a dead id or an exhausted per-model quota is
+    // worth moving off, but retrying the same model is not.
+    if(r.status===404||r.status===429){
+      const seen=[...tried,useModel];
+      if(!_rankedImage.length)await discoverModels();
+      const nx=_rankedImage.find(n=>!seen.includes(n));
+      if(nx)return gemImage(prompt,[...seen,nx]);
+      if(r.status===429)throw new Error(`無料枠の上限に達しました（エラー429）\n少し時間をおいてからお試しください。${detail?'\n詳細: '+detail:''}`);
     }
     throw new Error(`画像を生成できませんでした（エラー${r.status}）${detail?'\n詳細: '+detail:''}`);
   }
+  if(tried.length)store.set('pe_img_model',useModel);
   const d=await r.json();
   const part=d.candidates?.[0]?.content?.parts?.find(p=>p.inlineData);
   if(!part)throw new Error('画像が返ってきませんでした。もう一度お試しください');
