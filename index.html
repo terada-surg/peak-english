@@ -871,31 +871,78 @@ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{
 },400)}
 
 /* ---------- Gemini API ---------- */
-const APP_VERSION='2026.08.12-4';
-const TXT_MODEL='gemini-2.5-flash';
-const IMG_MODEL='gemini-2.5-flash-image';
+const APP_VERSION='2026.08.12-5';
+// Google retires model ids on its own schedule, and a retired id 404s for
+// newly-created keys well before the published shutdown date. So these are
+// only starting points: discoverModels() asks the key what it can actually
+// reach and rewrites them, and gem() self-heals on a 404. Without that, the
+// app breaks for the user with no way for them to fix it.
+const TXT_MODEL_DEFAULT='gemini-3.6-flash';
+const IMG_MODEL_DEFAULT='gemini-3.1-flash-image';
+function txtModel(){return store.get('pe_txt_model',TXT_MODEL_DEFAULT)}
+function imgModel(){return store.get('pe_img_model',IMG_MODEL_DEFAULT)}
 function apiKey(){return store.get('pe_key','')}
+
+// Ask the key which models it can actually use, and pick the best live ones.
+// Returns {text, image} or null.
+const BAD_MODEL=/embedding|aqa|tts|audio|live|imagen|veo|robotics|guard|learnlm/i;
+function modelRank(name){
+  const v=name.match(/gemini-(\d+(?:\.\d+)?)/);
+  let score=v?parseFloat(v[1])*100:0;
+  if(/flash/i.test(name))score+=40;      // fast + generous free tier
+  if(/lite/i.test(name))score-=15;       // weaker for long-form writing
+  if(/pro/i.test(name))score+=10;
+  if(/preview|exp/i.test(name))score-=60;// prefer stable ids
+  if(/-\d{2,}$/.test(name))score-=5;     // prefer the unversioned alias
+  return score;
+}
+async function discoverModels(){
+  const key=apiKey();if(!key)return null;
+  try{
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}&pageSize=1000`);
+    if(!r.ok)return null;
+    const d=await r.json();
+    const usable=(d.models||[])
+      .filter(m=>(m.supportedGenerationMethods||m.supportedActions||[]).includes('generateContent'))
+      .map(m=>String(m.name||'').replace(/^models\//,''))
+      .filter(n=>n&&!BAD_MODEL.test(n));
+    const text=usable.filter(n=>!/image/i.test(n)).sort((a,b)=>modelRank(b)-modelRank(a))[0];
+    const image=usable.filter(n=>/image/i.test(n)).sort((a,b)=>modelRank(b)-modelRank(a))[0];
+    if(text)store.set('pe_txt_model',text);
+    if(image)store.set('pe_img_model',image);
+    return{text:text||null,image:image||null};
+  }catch(e){return null}
+}
 function requireKey(){
   if(apiKey())return true;
   toast('AI機能にはAPIキーが必要です。設定画面で保存してください','err');
   openModal('settingsModal');
   return false;
 }
-async function gem({prompt,system,history,json=false,model=TXT_MODEL,retries=3}){
+async function gem({prompt,system,history,json=false,model=null,retries=3,_healed=false}){
   const key=apiKey();
+  const useModel=model||txtModel();
   const body={contents:history?history.map(m=>({role:m.role,parts:[{text:m.text}]})):[{parts:[{text:prompt}]}]};
   if(system)body.systemInstruction={parts:[{text:system}]};
   if(json)body.generationConfig={responseMimeType:'application/json'};
   let delay=1200;
   for(let i=0;i<retries;i++){
     try{
-      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,{
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${useModel}:generateContent?key=${key}`,{
         method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       if(!r.ok){
         // Surface Google's own error text + status so a failure is diagnosable
         // from the screen alone, instead of a generic "something went wrong".
         let detail='';
         try{const eb=await r.json();detail=eb?.error?.message||''}catch(_e){}
+        // A 404 means this model id died (retired, or never available to this
+        // key). Find a live one and transparently retry rather than dead-ending.
+        if(r.status===404&&!_healed&&!model){
+          const found=await discoverModels();
+          if(found?.text&&found.text!==useModel)
+            return gem({prompt,system,history,json,retries,_healed:true});
+          throw{fatal:true,msg:`使えるAIモデルが見つかりませんでした（エラー404）${detail?'\n詳細: '+detail:''}`};
+        }
         if(r.status===429)throw{msg:'AIの利用上限に達しました。1分ほど待って再度お試しください'};
         if(r.status===400||r.status===401||r.status===403)
           throw{fatal:true,msg:`APIキーをご確認ください（エラー${r.status}）${detail?'\n詳細: '+detail:''}`};
@@ -919,12 +966,21 @@ function parseJSON(raw){
   if(a!==-1){try{return JSON.parse(t.slice(a,b+1))}catch(e){}}
   throw new Error('AIの応答を読み取れませんでした。もう一度お試しください');
 }
-async function gemImage(prompt){
+async function gemImage(prompt,_healed=false){
   const key=apiKey();
-  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${IMG_MODEL}:generateContent?key=${key}`,{
+  const useModel=imgModel();
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${useModel}:generateContent?key=${key}`,{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseModalities:['TEXT','IMAGE']}})});
-  if(!r.ok)throw new Error('画像の生成に失敗しました（キーの権限または上限の可能性）');
+  if(!r.ok){
+    let detail='';
+    try{const eb=await r.json();detail=eb?.error?.message||''}catch(_e){}
+    if(r.status===404&&!_healed){
+      const found=await discoverModels();
+      if(found?.image&&found.image!==useModel)return gemImage(prompt,true);
+    }
+    throw new Error(`画像を生成できませんでした（エラー${r.status}）${detail?'\n詳細: '+detail:''}`);
+  }
   const d=await r.json();
   const part=d.candidates?.[0]?.content?.parts?.find(p=>p.inlineData);
   if(!part)throw new Error('画像が返ってきませんでした。もう一度お試しください');
@@ -1576,18 +1632,26 @@ $('#btnTestConn').addEventListener('click',async()=>{
   if(!k){box.className='inline-alert';box.textContent='⚠ APIキーがまだ保存されていません。上の欄にキーを貼り付けて「キーを保存」を押してください。';return}
   box.className='inline-ok';box.textContent='テスト中…';
   setBusy('#btnTestConn','#btnTestConnLabel','テスト中…','接続テストを実行',true);
-  try{
-    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${TXT_MODEL}:generateContent?key=${k}`,{
+  const probe=async m=>{
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${k}`,{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({contents:[{parts:[{text:'Say OK'}]}]})});
     let detail='';
-    try{const b=await r.json();detail=b?.error?.message||(b?.candidates?'':'（応答の形式が想定と異なります）')}catch(_e){detail='（応答を読み取れませんでした）'}
-    if(r.ok){
+    try{const b=await r.json();detail=b?.error?.message||''}catch(_e){detail='（応答を読み取れませんでした）'}
+    return{ok:r.ok,status:r.status,detail};
+  };
+  try{
+    let m=txtModel(),res=await probe(m),healed=false;
+    if(!res.ok&&res.status===404){
+      const found=await discoverModels();
+      if(found?.text&&found.text!==m){m=found.text;res=await probe(m);healed=true}
+    }
+    if(res.ok){
       box.className='inline-ok';
-      box.textContent=`✓ 接続成功（バージョン ${APP_VERSION}）\nAI機能をお使いいただけます。`;
+      box.textContent=`✓ 接続成功\n使用モデル: ${m}${healed?'（自動で最新モデルに切り替えました）':''}\nバージョン: ${APP_VERSION}\nAI機能をお使いいただけます。`;
     }else{
       box.className='inline-alert';
-      box.textContent=`⚠ 接続できませんでした\nエラー番号: ${r.status}\nモデル: ${TXT_MODEL}\nバージョン: ${APP_VERSION}\n詳細: ${detail||'(詳細なし)'}`;
+      box.textContent=`⚠ 接続できませんでした\nエラー番号: ${res.status}\nモデル: ${m}\nバージョン: ${APP_VERSION}\n詳細: ${res.detail||'(詳細なし)'}`;
     }
   }catch(e){
     box.className='inline-alert';
