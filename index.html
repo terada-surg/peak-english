@@ -183,6 +183,8 @@ nav{
 }
 .chip.on{background:var(--navy);border-color:var(--navy);color:var(--gold-soft)}
 .chip:active{transform:scale(.95)}
+.chip.half{width:calc(50% - 4px);padding:11px 4px;line-height:1.45}
+.chip-sub{font-size:10px;opacity:.72;font-weight:600;letter-spacing:.02em}
 
 /* pills (speed etc.) */
 .pills{display:flex;gap:6px;flex-wrap:wrap}
@@ -235,10 +237,10 @@ input[type=range]::-webkit-slider-thumb{
   border-radius:2px;padding:8px;margin-bottom:8px;
 }
 .day-tag{
-  font-family:var(--serif);font-size:11px;letter-spacing:.14em;
-  color:var(--gold);width:34px;flex-shrink:0;
+  font-family:var(--serif);font-size:11px;letter-spacing:.08em;
+  color:var(--gold);width:44px;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
-  border-right:1px solid var(--line);
+  border-right:1px solid var(--line);white-space:nowrap;
 }
 .day-row textarea{
   flex:1;border:none;background:transparent;padding:4px 6px;
@@ -349,17 +351,19 @@ input[type=range]::-webkit-slider-thumb{
 
 /* reader */
 .reader-wrap{flex:1;min-height:0;margin:0 16px;display:flex;flex-direction:column}
+/* Sans, not the display serif: this text is read while being followed
+   word-by-word during playback, where the serif was tiring to track. */
 .reader{
   flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
   background:var(--paper);border:1px solid var(--line);border-radius:3px;
   padding:20px 18px 45vh;
-  font-family:var(--serif);
-  font-size:19px;line-height:2.05;color:var(--navy-soft);
-  letter-spacing:.01em;
+  font-family:var(--sans);
+  font-size:17.5px;line-height:1.95;color:var(--ink);
+  letter-spacing:0;
 }
 .reader textarea{
   border:none;background:transparent;width:100%;height:100%;
-  font-family:var(--serif);font-size:18px;line-height:2;padding:0;
+  font-family:var(--sans);font-size:17px;line-height:1.9;padding:0;
 }
 .sent{cursor:pointer;border-radius:2px;transition:background .2s;padding:1px 0}
 .sent.done{color:#A9A594}
@@ -485,7 +489,7 @@ a{color:var(--gold);font-weight:600}
   .tab svg{width:22px;height:22px}
   .tab span{font-size:10px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .reader{font-size:21px}
+  .reader{font-size:19px}
   .modal{border-radius:8px;margin-bottom:8dvh}
   .modal-bg{align-items:center}
 }
@@ -543,7 +547,13 @@ a{color:var(--gold);font-weight:600}
     </div>
 
     <div class="card">
-      <label class="lbl">Weekly Theme — 今週のテーマ</label>
+      <label class="lbl">Mode — 教材の作り方</label>
+      <div class="chips" style="gap:8px">
+        <button class="chip half" data-mode="theme">テーマ型<br><span class="chip-sub">7つの話題</span></button>
+        <button class="chip half" data-mode="story">ストーリー型<br><span class="chip-sub">連続ドラマ全7話</span></button>
+      </div>
+      <div class="sec-note" id="modeNote" style="margin-bottom:16px"></div>
+      <label class="lbl" id="themeLabel">Weekly Theme — 今週のテーマ</label>
       <input type="text" id="themeInput" placeholder="例：トライアスロン、分子栄養学、経営…">
       <button class="btn gold wide" id="btnGenTopics" style="margin-top:11px">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.9 2.6L22.5 18.5l-2.6.9L19 22l-.9-2.6-2.6-.9 2.6-.9z"/></svg>
@@ -889,14 +899,22 @@ function setBusy(btnSel,labelSel,busyText,idleText,busy){
 
 /* ---------- App State ---------- */
 const DEFAULT_S={
-  themeInput:'',topics:['','','','','','',''],cefrLevel:'A2',targetWordCount:200,
+  themeInput:'',topics:['','','','','','',''],cefrLevel:'B1',targetWordCount:200,
+  topicMode:'theme',
   mainText:'',japaneseText:'',vocabText:'',grammarText:'',quizData:null,
-  speechScript:'',speakScriptLevel:'A2',comicImg:'',
+  speechScript:'',speakScriptLevel:'B1',comicImg:'',
   prepQuestion:'',prepQuestionJp:'',prepUserAnswer:'',prepFeedback:'',prepCorrected:'',prepModelAnswer:'',
   roleplaySituation:'',rpLevel:'B1',
   diaryInput:'',diaryFeedback:null
 };
 let S=(()=>{try{return{...DEFAULT_S,...JSON.parse(store.get('pe_state_v1','{}'))}}catch(e){return{...DEFAULT_S}}})();
+// Changing DEFAULT_S alone would never reach anyone who has already used the
+// app, since their saved state wins. Apply the new defaults once, then leave
+// the choice alone so a later manual change sticks.
+if(store.get('pe_defaults_v2','')!=='1'){
+  S.cefrLevel='B1';S.speakScriptLevel='B1';S.targetWordCount=200;
+  store.set('pe_defaults_v2','1');
+}
 let saveTimer=null;
 function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{
   try{localStorage.setItem('pe_state_v1',JSON.stringify(S))}
@@ -904,7 +922,7 @@ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{
 },400)}
 
 /* ---------- Gemini API ---------- */
-const APP_VERSION='2026.08.12-9';
+const APP_VERSION='2026.08.12-10';
 // Google retires model ids on its own schedule, and a retired id 404s for
 // newly-created keys well before the published shutdown date. So these are
 // only starting points: discoverModels() asks the key what it can actually
@@ -1088,29 +1106,81 @@ function renderChips(sel,current,onPick){
 }
 function renderLevelChips(){renderChips('#levelChips',S.cefrLevel,l=>{S.cefrLevel=l;save();renderLevelChips()})}
 
+const isStory=()=>S.topicMode==='story';
+// A narrative premise ("a boy who dreams of the majors") was being treated
+// as a subject to study, so each day drifted onto a different subject
+// entirely. Story mode makes the seven days one continuous drama and, more
+// importantly, forbids leaving the premise.
+function renderModeChips(){
+  $$('[data-mode]').forEach(c=>c.classList.toggle('on',c.dataset.mode===S.topicMode));
+  $('#modeNote').textContent=isStory()
+    ? '1つの物語を第1話〜第7話に分けて作ります。全話が同じ主人公・同じ設定で続きます。'
+    : 'テーマに関する7つの独立した話題を作ります。';
+  $('#themeLabel').textContent=isStory()?'Story — 物語の設定':'Weekly Theme — 今週のテーマ';
+  $('#themeInput').placeholder=isStory()
+    ? '例：何の変哲もない野球少年が、大リーガーを夢見て歩むサクセスストーリー'
+    : '例：トライアスロン、分子栄養学、経営…';
+  const lbl=isStory()?'全7話のあらすじを作成':'7日分のお題を作成';
+  if(!genTopicBusy)$('#btnGenTopicsLabel').textContent=lbl;
+}
+$$('[data-mode]').forEach(c=>c.addEventListener('click',()=>{
+  haptic();S.topicMode=c.dataset.mode;save();renderModeChips();renderTopics();
+}));
+
+function topicsPrompt(){
+  if(isStory())return `あなたはプロの物語作家です。次の設定で、全7話の連続ドラマのあらすじを作ってください。
+
+物語の設定: 「${S.themeInput}」
+
+【絶対厳守】
+・7話すべてが、この設定「${S.themeInput}」ひとつの物語の一部であること。
+・設定と無関係な題材（別のスポーツ、語学学習、ビジネス論など）を絶対に混ぜないこと。話が逸れることは失敗とみなす。
+・第1話から第7話まで時系列で連続し、同じ主人公が一貫して登場すること。
+・起承転結を意識し、山場と挫折を経て、第7話が感動的な結末になること。
+・各話は日本語で60〜90字程度。「その回で何が起きるか」を具体的に書く。
+
+JSON形式: { "topics": ["第1話 …", "第2話 …", "第3話 …", "第4話 …", "第5話 …", "第6話 …", "第7話 …"] }`;
+  return `テーマ「${S.themeInput}」について、英語学習者が学べる具体的なサブトピック（お題）を7つ日本語で作成。すべてこのテーマの範囲内にすること。JSON形式: { "topics": ["お題1","お題2","お題3","お題4","お題5","お題6","お題7"] }`;
+}
+
 let genTopicBusy=false;
 async function genTopics(){
-  if(!S.themeInput.trim())return toast('テーマを入力してください','err');
+  if(!S.themeInput.trim())return toast(isStory()?'物語の設定を入力してください':'テーマを入力してください','err');
   if(!requireKey()||genTopicBusy)return;
-  genTopicBusy=true;setBusy('#btnGenTopics','#btnGenTopicsLabel','考え中…','7日分のお題を作成',true);
+  const idle=isStory()?'全7話のあらすじを作成':'7日分のお題を作成';
+  genTopicBusy=true;setBusy('#btnGenTopics','#btnGenTopicsLabel','考え中…',idle,true);
   setInlineErr('topicGenErr','');
   try{
-    const raw=await gem({prompt:`テーマ「${S.themeInput}」について、英語学習者が学べる具体的なサブトピック（お題）を7つ日本語で作成。JSON形式: { "topics": ["お題1","お題2","お題3","お題4","お題5","お題6","お題7"] }`,json:true});
+    const raw=await gem({prompt:topicsPrompt(),json:true});
     const r=parseJSON(raw);
     if(!Array.isArray(r.topics)||r.topics.length<7)throw new Error('もう一度お試しください');
     S.topics=r.topics.slice(0,7);save();renderTopics();
-    toast('7つのお題を作成しました');
+    toast(isStory()?'全7話のあらすじを作成しました':'7つのお題を作成しました');
   }catch(e){toast(e.message,'err');setInlineErr('topicGenErr',e.message)}
-  finally{genTopicBusy=false;setBusy('#btnGenTopics','#btnGenTopicsLabel','','7日分のお題を作成',false)}
+  finally{genTopicBusy=false;setBusy('#btnGenTopics','#btnGenTopicsLabel','',idle,false)}
 }
 async function regenTopic(i,btn){
-  if(!S.themeInput.trim())return toast('テーマを入力してください','err');
+  if(!S.themeInput.trim())return toast(isStory()?'物語の設定を入力してください':'テーマを入力してください','err');
   if(!requireKey())return;
   btn.disabled=true;btn.textContent='…';
+  // Rewriting one episode still has to fit between its neighbours, so the
+  // surrounding arc is part of the request.
+  const prompt=isStory()
+    ? `物語「${S.themeInput}」の全7話のうち、第${i+1}話だけを別の展開に書き直してください。
+
+現在の全7話:
+${S.topics.map((t,n)=>`第${n+1}話: ${t||'（未定）'}`).join('\n')}
+
+【絶対厳守】
+・設定「${S.themeInput}」から絶対に外れないこと。
+・第${i}話から自然につながり、第${i+2}話へ自然につながること。
+・日本語で60〜90字程度。
+JSON形式: { "topic": "第${i+1}話 …" }`
+    : `テーマ「${S.themeInput}」の新しいお題を1つ日本語で作成。テーマの範囲内にすること。JSON形式: { "topic": "新しいお題" }`;
   try{
-    const raw=await gem({prompt:`テーマ「${S.themeInput}」の新しいお題を1つ日本語で作成。JSON形式: { "topic": "新しいお題" }`,json:true});
+    const raw=await gem({prompt,json:true});
     const r=parseJSON(raw);
-    if(r.topic){S.topics[i]=r.topic;save();renderTopics();toast(DAYS[i]+'のお題を作り直しました')}
+    if(r.topic){S.topics[i]=r.topic;save();renderTopics();toast((isStory()?`第${i+1}話`:DAYS[i])+'を作り直しました')}
   }catch(e){toast(e.message,'err');btn.disabled=false;btn.textContent='変更'}
 }
 const ARTICLE_JSON_SPEC=`出力は以下のJSON形式に厳密に従ってください: { "english": "本文", "japanese": "日本語訳", "vocabulary": "この英文の重要単語、重要イディオムの解説（日本語で箇条書き）", "grammar": "文法解説（日本語で箇条書き）", "quiz": [{ "question": "...", "options": ["...","...","...","...","..."], "answer": 0 }, { "question": "...", "options": ["...","...","...","...","..."], "answer": 1 }, { "question": "...", "options": ["...","...","...","...","..."], "answer": 2 }] }
@@ -1120,13 +1190,41 @@ const ARTICLE_JSON_SPEC=`出力は以下のJSON形式に厳密に従ってくだ
 ・各問題の選択肢は5つ、正解は1つだけ
 ・answerは正解の選択肢の番号（0から始まる）
 ・本文を読めば答えられる内容理解問題にすること`;
+// In story mode the whole arc goes in every request: without it the model
+// only sees one episode line and invents an unrelated subject around it.
+function articlePrompt(topic,i){
+  const common=`英文は随所に中学生レベルの英文法（関係代名詞、不定詞、比較、現在完了など）を散りばめた内容にして学習効果を高めてください。`;
+  if(isStory()){
+    const arc=S.topics.map((t,n)=>`第${n+1}話: ${t||'（未定）'}`).join('\n');
+    return `あなたはプロの物語作家です。全7話の連続ドラマの「第${i+1}話」を英語で書いてください。
+
+■ 物語全体の設定（この設定が絶対の土台です）
+「${S.themeInput}」
+
+■ 全7話の流れ
+${arc}
+
+■ 今回書くのは第${i+1}話
+「${topic}」
+
+【絶対厳守】
+・物語の設定「${S.themeInput}」から絶対に外れないこと。別のスポーツ、語学学習、無関係な題材を混ぜることは失敗とみなす。
+・主人公・登場人物・舞台は全7話で一貫させること。
+・第${i+1}話の出来事だけを描き、先の回の展開を先取りしないこと。
+・解説文やエッセイではなく、情景・行動・会話のある「物語」として書くこと。
+・読者の心が動くドラマチックな文章にし、次回が読みたくなる終わり方にすること。
+・CEFR ${S.cefrLevel} レベル、約${S.targetWordCount}語。${common}
+${ARTICLE_JSON_SPEC}`;
+  }
+  return `トピック「${topic}」についてCEFR ${S.cefrLevel} レベルの英語で約${S.targetWordCount}語の記事を作成してください。テーマ「${S.themeInput}」の範囲内で書き、無関係な題材に逸れないこと。${common}${ARTICLE_JSON_SPEC}`;
+}
 async function genArticle(i,btn){
   const topic=S.topics[i];
   if(!topic||!topic.trim())return toast('お題が空です','err');
   if(!requireKey())return;
   btn.disabled=true;btn.textContent='生成中…';
   try{
-    const raw=await gem({prompt:`トピック「${topic}」についてCEFR ${S.cefrLevel} レベルの英語で約${S.targetWordCount}語の記事を作成してください。英文は随所に中学生レベルの英文法（関係代名詞、不定詞、比較、現在完了など）を散りばめた内容にして学習効果を高めてください。${ARTICLE_JSON_SPEC}`,json:true});
+    const raw=await gem({prompt:articlePrompt(topic,i),json:true});
     applyArticle(parseJSON(raw));
     toast('英文とクイズを作成しました');
     window.scrollTo(0,0);$('#pane-topic').scrollTop=0;
@@ -1155,8 +1253,8 @@ function applyArticle(r){
 function renderTopics(){
   $('#topicList').innerHTML=S.topics.map((t,i)=>`
     <div class="day-row">
-      <span class="day-tag">${DAYS[i]}</span>
-      <textarea data-i="${i}" placeholder="お題">${esc(t)}</textarea>
+      <span class="day-tag">${isStory()?`第${i+1}話`:DAYS[i]}</span>
+      <textarea data-i="${i}" placeholder="${isStory()?`第${i+1}話のあらすじ`:'お題'}">${esc(t)}</textarea>
       <div class="mini">
         <button class="mini-btn" data-re="${i}">変更</button>
         <button class="mini-btn navy" data-gen="${i}">Generate</button>
@@ -1808,7 +1906,7 @@ function initFields(){
   $('#prepAnswer').value=S.prepUserAnswer;
   $('#rpSituation').value=S.roleplaySituation;
   $('#diaryInput').value=S.diaryInput;
-  renderLevelChips();renderSpLevel();renderRpLevel();
+  renderLevelChips();renderSpLevel();renderRpLevel();renderModeChips();
   renderTopics();renderArticle();renderComic();renderPrep();renderWrite();
   $('#amRate').value=LS.rate;$('#amRateVal').textContent=LS.rate.toFixed(2).replace(/0$/,'')+'×';
   $('#amGap').value=LS.gap;$('#amGapVal').textContent=LS.gap.toFixed(2).replace(/\.?0+$/,'')+'s';
