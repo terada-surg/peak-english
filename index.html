@@ -419,6 +419,19 @@ input[type=range]::-webkit-slider-thumb{
 .rec-btn.rec{background:var(--red);color:#fff;animation:pulse 1.6s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(164,73,75,.35)}70%{box-shadow:0 0 0 18px rgba(164,73,75,0)}100%{box-shadow:0 0 0 0 rgba(164,73,75,0)}}
 .comic-img{width:100%;border:1px solid var(--line);border-radius:3px;box-shadow:0 4px 16px rgba(30,42,68,.12)}
+/* Text stand-in for the 4-panel comic: same memory job, no image quota */
+.scene-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.scene-card{
+  position:relative;background:var(--paper);border:1px solid var(--line);
+  border-top:2px solid var(--gold);border-radius:3px;padding:16px 12px 13px;text-align:center;
+}
+.scene-no{
+  position:absolute;top:6px;left:9px;font-family:var(--serif);
+  font-size:11px;color:var(--gold);letter-spacing:.1em;
+}
+.scene-emoji{font-size:30px;line-height:1.2;margin-bottom:7px}
+.scene-en{font-size:13px;line-height:1.6;color:var(--navy);font-weight:600}
+.scene-jp{font-size:11px;line-height:1.6;color:var(--muted);margin-top:5px}
 
 /* ============ TOAST / MODAL / LOADER ============ */
 #toast{
@@ -635,7 +648,7 @@ a{color:var(--gold);font-weight:600}
     <div class="sec">
       <div class="sec-kicker">Speaking</div>
       <div class="sec-title">One-Minute Speech</div>
-      <div class="sec-note">台本づくり → 4コマ画像で記憶 → 録音してAI添削、の3ステップ。</div>
+      <div class="sec-note">台本づくり → 4コマで記憶 → 録音してAI添削、の3ステップ。</div>
     </div>
 
     <div class="card">
@@ -646,9 +659,9 @@ a{color:var(--gold);font-weight:600}
     </div>
 
     <div class="card">
-      <label class="lbl">Step 2 — Memory 4コマ画像</label>
-      <div class="sec-note" style="margin:0 0 11px">台本を4つの場面のイラストにします。絵を見ながら話す練習をすると、暗記に頼らず話せます。</div>
-      <button class="btn ghost wide" id="btnGenComic"><span id="btnGenComicLabel">4コマ画像を生成</span></button>
+      <label class="lbl">Step 2 — Memory 4コマで記憶</label>
+      <div class="sec-note" style="margin:0 0 11px">台本を4つの場面に分けます。場面を順に思い出しながら話すと、暗記に頼らず話せます。<br>※イラスト化はGoogleの有料プラン限定のため、無料プランでは言葉のカードで表示されます。</div>
+      <button class="btn ghost wide" id="btnGenComic"><span id="btnGenComicLabel">4コマで記憶する</span></button>
       <div id="comicArea" style="margin-top:12px"></div>
     </div>
 
@@ -902,7 +915,7 @@ const DEFAULT_S={
   themeInput:'',topics:['','','','','','',''],cefrLevel:'B1',targetWordCount:200,
   topicMode:'theme',
   mainText:'',japaneseText:'',vocabText:'',grammarText:'',quizData:null,
-  speechScript:'',speakScriptLevel:'B1',comicImg:'',
+  speechScript:'',speakScriptLevel:'B1',comicImg:'',comicScenes:null,
   prepQuestion:'',prepQuestionJp:'',prepUserAnswer:'',prepFeedback:'',prepCorrected:'',prepModelAnswer:'',
   roleplaySituation:'',rpLevel:'B1',
   diaryInput:'',diaryFeedback:null
@@ -922,7 +935,7 @@ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{
 },400)}
 
 /* ---------- Gemini API ---------- */
-const APP_VERSION='2026.08.18-11';
+const APP_VERSION='2026.08.18-12';
 // Google retires model ids on its own schedule, and a retired id 404s for
 // newly-created keys well before the published shutdown date. So these are
 // only starting points: discoverModels() asks the key what it can actually
@@ -1613,27 +1626,55 @@ $('#btnGenScript').addEventListener('click',async()=>{
 $('#speechScript').addEventListener('input',e=>{S.speechScript=e.target.value;save()});
 
 function renderComic(){
-  $('#comicArea').innerHTML=S.comicImg?`<img class="comic-img" src="${S.comicImg}" alt="4コマ画像">`:'';
+  const a=$('#comicArea');
+  if(S.comicImg){a.innerHTML=`<img class="comic-img" src="${S.comicImg}" alt="4コマ画像">`;return}
+  if(Array.isArray(S.comicScenes)&&S.comicScenes.length){
+    a.innerHTML=`<div class="scene-grid">${S.comicScenes.map((s,i)=>`
+      <div class="scene-card">
+        <span class="scene-no">${i+1}</span>
+        <div class="scene-emoji">${esc(s.emoji||'●')}</div>
+        <div class="scene-en">${esc(s.en||'')}</div>
+        <div class="scene-jp">${esc(s.jp||'')}</div>
+      </div>`).join('')}</div>
+      <div class="sec-note" style="margin-top:10px">画像生成は無料プランの対象外のため、場面を言葉のカードにしました。この4枚を順に思い出しながら話す練習をすると、丸暗記に頼らず話せます。</div>`;
+    return;
+  }
+  a.innerHTML='';
 }
 $('#btnGenComic').addEventListener('click',async()=>{
   haptic('med');
   if(!S.speechScript.trim())return toast('先にStep 1で台本を作成してください','err');
   if(!requireKey())return;
-  setBusy('#btnGenComic','#btnGenComicLabel','描いています…（30秒ほど）','4コマ画像を生成',true);
+  setBusy('#btnGenComic','#btnGenComicLabel','作成中…（30秒ほど）','4コマで記憶する',true);
   try{
-    const rawScenes=await gem({prompt:`以下のスピーチ台本を、文字なしの4コマ漫画にするための4つの視覚的なシーン（主人公の無言の行動と情景のみ）に要約してください。条件: JSONの配列(文字列4つ)のみを出力すること。重要: 各シーンは英語の短い物理的な動作の描写にし、セリフ、会話、看板、文字などの概念を一切含めないこと。台本: ${S.speechScript}`,json:true});
-    let scenes;try{scenes=parseJSON(rawScenes)}catch(e){scenes=['Scene 1','Scene 2','Scene 3','Scene 4']}
-    if(!Array.isArray(scenes))scenes=['Scene 1','Scene 2','Scene 3','Scene 4'];
-    const img=await gemImage(`A single square image containing a 4-panel story illustration arranged in a 2x2 grid, separated by thin gold lines on an ivory background. Elegant minimal flat illustration style, sophisticated muted palette of navy blue, antique gold, sage green and cream. The same one adult protagonist appears in all 4 panels and MUST look identical in each.
-Panel 1 (top-left): ${scenes[0]||'Scene 1'}.
-Panel 2 (top-right): ${scenes[1]||'Scene 2'}.
-Panel 3 (bottom-left): ${scenes[2]||'Scene 3'}.
-Panel 4 (bottom-right): ${scenes[3]||'Scene 4'}.
+    // Scenes are the actual memory aid; the picture is just one way to show
+    // them. Text generation is free, so build these first and they survive
+    // even when image generation is not available on this plan.
+    const rawScenes=await gem({prompt:`以下のスピーチ台本を、記憶用の4つの場面に分けてください。
+条件:
+・4つの要素を持つJSON配列のみを出力
+・各要素は { "emoji": "場面を表す絵文字1つ", "en": "その場面の短い英語（5〜8語、主人公の動作や情景）", "jp": "日本語で10〜20字の説明" }
+・セリフや会話ではなく、目に浮かぶ動作・情景にすること
+台本: ${S.speechScript}`,json:true});
+    let scenes=[];try{scenes=parseJSON(rawScenes)}catch(e){}
+    if(!Array.isArray(scenes)||!scenes.length)throw new Error('場面を作れませんでした。もう一度お試しください');
+    scenes=scenes.slice(0,4).map(s=>typeof s==='string'?{emoji:'●',en:s,jp:''}:s);
+    S.comicScenes=scenes;S.comicImg='';save();renderComic();
+    try{
+      const img=await gemImage(`A single square image containing a 4-panel story illustration arranged in a 2x2 grid, separated by thin gold lines on an ivory background. Elegant minimal flat illustration style, sophisticated muted palette of navy blue, antique gold, sage green and cream. The same one adult protagonist appears in all 4 panels and MUST look identical in each.
+Panel 1 (top-left): ${scenes[0]?.en||'Scene 1'}.
+Panel 2 (top-right): ${scenes[1]?.en||'Scene 2'}.
+Panel 3 (bottom-left): ${scenes[2]?.en||'Scene 3'}.
+Panel 4 (bottom-right): ${scenes[3]?.en||'Scene 4'}.
 Write small elegant numerals 1, 2, 3, 4 in a corner of each respective panel. ABSOLUTELY NO OTHER TEXT: no words, no letters, no speech bubbles, no signs. Completely textless except the four small numerals.`);
-    S.comicImg=img;save();renderComic();
-    toast('4コマ画像を作成しました');
+      S.comicImg=img;save();renderComic();
+      toast('4コマ画像を作成しました');
+    }catch(imgErr){
+      // Not a failure of the step — the scene cards already do its job.
+      toast('4つの場面カードを作成しました');
+    }
   }catch(e){toast(e.message,'err')}
-  finally{setBusy('#btnGenComic','#btnGenComicLabel','','4コマ画像を生成',false)}
+  finally{setBusy('#btnGenComic','#btnGenComicLabel','','4コマで記憶する',false)}
 });
 
 /* --- recording --- */
