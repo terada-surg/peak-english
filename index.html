@@ -922,7 +922,7 @@ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{
 },400)}
 
 /* ---------- Gemini API ---------- */
-const APP_VERSION='2026.08.12-10';
+const APP_VERSION='2026.08.18-11';
 // Google retires model ids on its own schedule, and a retired id 404s for
 // newly-created keys well before the published shutdown date. So these are
 // only starting points: discoverModels() asks the key what it can actually
@@ -930,8 +930,15 @@ const APP_VERSION='2026.08.12-10';
 // app breaks for the user with no way for them to fix it.
 const TXT_MODEL_DEFAULT='gemini-3.6-flash';
 const IMG_MODEL_DEFAULT='gemini-3.1-flash-image';
-function txtModel(){return store.get('pe_txt_model',TXT_MODEL_DEFAULT)}
-function imgModel(){return store.get('pe_img_model',IMG_MODEL_DEFAULT)}
+// Never hand back a model already known to be unusable — including the
+// built-in default, which is otherwise the one place a block can't reach.
+function pickModel(key,dflt,ranked){
+  const b=blockedModels(),s=store.get(key,dflt);
+  if(!b.includes(s))return s;
+  return ranked.find(n=>!b.includes(n))||s;
+}
+function txtModel(){return pickModel('pe_txt_model',TXT_MODEL_DEFAULT,_rankedText)}
+function imgModel(){return pickModel('pe_img_model',IMG_MODEL_DEFAULT,_rankedImage)}
 function apiKey(){return store.get('pe_key','')}
 
 // Ask the key which models it can actually use, and pick the best live ones.
@@ -947,6 +954,24 @@ function modelRank(name){
   if(/-\d{2,}$/.test(name))score-=5;     // prefer the unversioned alias
   return score;
 }
+// Pro image models ("Nano Banana Pro") are paid-only — their free-tier quota
+// is literally 0, so picking one makes the comic feature fail every time for
+// a free key. Flash image models do have a free allowance.
+function imageRank(name){
+  return modelRank(name)-(/pro/i.test(name)?150:0);
+}
+// A model whose free quota is 0 will never work on this plan, so waiting is
+// pointless — remember it and stop offering it.
+function blockedModels(){try{return JSON.parse(store.get('pe_blocked','[]'))}catch(e){return[]}}
+function blockModel(n){
+  const b=blockedModels();
+  if(n&&!b.includes(n)){b.push(n);store.set('pe_blocked',JSON.stringify(b))}
+  _rankedText=_rankedText.filter(x=>x!==n);
+  _rankedImage=_rankedImage.filter(x=>x!==n);
+  if(store.get('pe_txt_model','')===n)store.del('pe_txt_model');
+  if(store.get('pe_img_model','')===n)store.del('pe_img_model');
+}
+const isNoFreeQuota=d=>/limit:\s*0\b/i.test(d||'');
 let _rankedText=[],_rankedImage=[];
 async function discoverModels(){
   const key=apiKey();if(!key)return null;
@@ -954,13 +979,13 @@ async function discoverModels(){
     const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}&pageSize=1000`);
     if(!r.ok)return null;
     const d=await r.json();
+    const blocked=blockedModels();
     const usable=(d.models||[])
       .filter(m=>(m.supportedGenerationMethods||m.supportedActions||[]).includes('generateContent'))
       .map(m=>String(m.name||'').replace(/^models\//,''))
-      .filter(n=>n&&!BAD_MODEL.test(n));
-    const byRank=(a,b)=>modelRank(b)-modelRank(a);
-    _rankedText=usable.filter(n=>!/image/i.test(n)).sort(byRank);
-    _rankedImage=usable.filter(n=>/image/i.test(n)).sort(byRank);
+      .filter(n=>n&&!BAD_MODEL.test(n)&&!blocked.includes(n));
+    _rankedText=usable.filter(n=>!/image/i.test(n)).sort((a,b)=>modelRank(b)-modelRank(a));
+    _rankedImage=usable.filter(n=>/image/i.test(n)).sort((a,b)=>imageRank(b)-imageRank(a));
     const text=_rankedText[0],image=_rankedImage[0];
     if(text)store.set('pe_txt_model',text);
     if(image)store.set('pe_img_model',image);
@@ -1019,6 +1044,9 @@ async function gem({prompt,system,history,json=false,model=null}){
     // wrong with the request — waiting genuinely works, so retry before
     // giving up (and only then try another model).
     if(res.status>=500&&busyTries<2){busyTries++;await wait(1800*busyTries);continue}
+    // "limit: 0" is not a used-up quota, it is a model this plan can never
+    // call. Drop it for good rather than suggesting a wait that won't help.
+    if(res.status===429&&isNoFreeQuota(res.detail))blockModel(m);
     tried.push(m);
     // Retrying the SAME model on 429 just burns more of the quota that is
     // already exhausted; move to a model with its own quota instead.
@@ -1030,6 +1058,8 @@ async function gem({prompt,system,history,json=false,model=null}){
       throw new Error(`APIキーをご確認ください（エラー${res.status}）${res.detail?'\n詳細: '+res.detail:''}`);
     break;
   }
+  if(last?.status===429&&isNoFreeQuota(last.detail))
+    throw new Error(`この機能は無料プランの対象外のようです（エラー429）\n使えるAIを一通り試しましたが、いずれも無料枠が0でした。時間をおいても改善しません。`);
   if(last?.status===429)
     throw new Error(`無料枠の上限に達しました（エラー429）\n使えるモデルをすべて試しました。少し時間をおいてからお試しください。${last.detail?'\n詳細: '+last.detail:''}`);
   if(last?.status===404)
@@ -1062,10 +1092,15 @@ async function gemImage(prompt,tried=[],busyTries=0){
       return gemImage(prompt,tried,busyTries+1);
     }
     if(r.status===404||r.status===429||r.status>=500){
+      // Paid-only image model: blocking it makes the next attempt pick a
+      // model with an actual free allowance instead of failing the same way.
+      if(r.status===429&&isNoFreeQuota(detail))blockModel(useModel);
       const seen=[...tried,useModel];
       if(!_rankedImage.length)await discoverModels();
       const nx=_rankedImage.find(n=>!seen.includes(n));
       if(nx)return gemImage(prompt,[...seen,nx],0);
+      if(r.status===429&&isNoFreeQuota(detail))
+        throw new Error(`画像生成は無料プランの対象外のようです（エラー429）\n使える画像AIを一通り試しましたが、いずれも無料枠が0でした。\n時間をおいても改善しないため、4コマ画像はスキップして、台本と録音でご活用ください。`);
       if(r.status===429)throw new Error(`無料枠の上限に達しました（エラー429）\n少し時間をおいてからお試しください。${detail?'\n詳細: '+detail:''}`);
       if(r.status>=500)throw new Error(`AI側が一時的に混み合っています（エラー${r.status}）\n1〜2分ほど待ってから、もう一度お試しください。`);
     }
@@ -1836,6 +1871,9 @@ $('#btnTestConn').addEventListener('click',async()=>{
   const k=apiKey();
   if(!k){box.className='inline-alert';box.textContent='⚠ APIキーがまだ保存されていません。上の欄にキーを貼り付けて「キーを保存」を押してください。';return}
   box.className='inline-ok';box.textContent='テスト中…';
+  // This is the "check everything again" button, so forget past blocks —
+  // otherwise a model blocked on a free key stays blocked after an upgrade.
+  store.del('pe_blocked');_rankedText=[];_rankedImage=[];
   setBusy('#btnTestConn','#btnTestConnLabel','テスト中…','接続テストを実行',true);
   const probe=async m=>{
     const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${k}`,{
@@ -1887,6 +1925,7 @@ $('#btnResetData').addEventListener('click',()=>{
   }
   S={...DEFAULT_S};
   store.set('pe_state_v1',JSON.stringify(S));
+  store.del('pe_blocked');_rankedText=[];_rankedImage=[];
   lsStop();lsInvalidate();rpMsgs=[];
   initFields();
   closeModal('settingsModal');
