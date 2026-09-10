@@ -269,7 +269,9 @@ input[type=range]::-webkit-slider-thumb{
   text-transform:uppercase;margin-bottom:9px;font-weight:700;
 }
 .result-block .body{font-size:13.5px;line-height:2;color:var(--ink);white-space:pre-wrap}
-.result-block .body.en{font-family:var(--serif);font-size:16px;line-height:1.95;letter-spacing:.01em}
+/* English the learner actually reads is sans — the display serif is kept for
+   titles and figures, where it reads as premium rather than as work. */
+.result-block .body.en{font-family:var(--sans);font-size:15.5px;line-height:1.9;letter-spacing:0}
 
 /* ============ QUIZ ============ */
 .quiz-q{
@@ -277,10 +279,14 @@ input[type=range]::-webkit-slider-thumb{
   border-radius:2px;padding:15px;margin-bottom:12px;
 }
 .quiz-q .qt{
-  font-family:var(--serif);font-size:15.5px;line-height:1.6;
-  color:var(--navy);margin-bottom:12px;letter-spacing:.01em;
+  font-family:var(--sans);font-size:15px;line-height:1.7;
+  color:var(--navy);margin-bottom:12px;letter-spacing:0;font-weight:600;
 }
-.quiz-q .qnum{color:var(--gold);letter-spacing:.1em;font-size:12px;display:block;margin-bottom:4px}
+/* The "QUESTION 1" label is decoration, so it keeps the serif. */
+.quiz-q .qnum{
+  font-family:var(--serif);font-weight:400;
+  color:var(--gold);letter-spacing:.1em;font-size:12px;display:block;margin-bottom:4px;
+}
 .opt{
   display:block;width:100%;text-align:left;
   border:1px solid var(--line-strong);background:#FFFEF9;color:var(--ink);
@@ -606,7 +612,7 @@ a{color:var(--gold);font-weight:600}
       <button class="btn ghost wide" id="wpmReset">Reset</button>
     </div>
     <div class="card" style="padding:16px">
-      <div id="wpmText" style="font-family:var(--serif);font-size:18px;line-height:2;color:var(--navy-soft);min-height:180px;white-space:pre-wrap"></div>
+      <div id="wpmText" style="font-family:var(--sans);font-size:17.5px;line-height:1.95;color:var(--ink);min-height:180px;white-space:pre-wrap"></div>
     </div>
   </div>
 
@@ -935,7 +941,7 @@ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{
 },400)}
 
 /* ---------- Gemini API ---------- */
-const APP_VERSION='2026.08.18-12';
+const APP_VERSION='2026.09.10-13';
 // Google retires model ids on its own schedule, and a retired id 404s for
 // newly-created keys well before the published shutdown date. So these are
 // only starting points: discoverModels() asks the key what it can actually
