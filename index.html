@@ -860,6 +860,8 @@ a{color:var(--gold);font-weight:600}
       <label class="lbl">Voice — 話者</label>
       <select id="amVoice"></select>
       <div class="sec-note" style="margin-top:8px">iPhoneでは「設定 → アクセシビリティ → 読み上げコンテンツ → 声 → 英語」で高品質な声（Siri系）を追加できます。</div>
+      <button class="btn ghost wide" id="btnVoiceTest" style="margin-top:11px">今の設定で声をテスト</button>
+      <div id="voiceTestResult" class="hidden"></div>
     </div>
   </div>
 </div>
@@ -972,7 +974,7 @@ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{
 },400)}
 
 /* ---------- Gemini API ---------- */
-const APP_VERSION='2026.11.23-15';
+const APP_VERSION='2026.11.23-16';
 // Google retires model ids on its own schedule, and a retired id 404s for
 // newly-created keys well before the published shutdown date. So these are
 // only starting points: discoverModels() asks the key what it can actually
@@ -1549,18 +1551,42 @@ async function lsWake(on){
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&LS.playing)lsWake(true)});
 
-function lsSpeak(){
+function lsSpeak(safeMode){
   const s=LS.sents[LS.idx];
   if(!s)return lsFinish();
   const my=++LS.session;
-  clearTimeout(LS.gapTimer);LS.waiting=false;
-  try{window.speechSynthesis.cancel()}catch(e){}
+  clearTimeout(LS.gapTimer);clearTimeout(LS.startWatch);LS.waiting=false;
+  // Safari drops a speak() issued in the same tick as a cancel(), so only
+  // cancel when something is actually talking — and when it is, let the
+  // cancel settle before asking again.
+  let pending=false;
+  try{pending=window.speechSynthesis.speaking||window.speechSynthesis.pending}catch(e){}
+  if(pending){
+    try{window.speechSynthesis.cancel()}catch(e){}
+    LS.playing=true;LS.paused=false;
+    LS.gapTimer=setTimeout(()=>{if(my===LS.session&&LS.playing)lsSpeak(safeMode)},120);
+    return;
+  }
   const u=new SpeechSynthesisUtterance(s);
-  u.rate=LS.rate;u.pitch=LS.pitch;
+  // iOS can go silent instead of slow at very low rates; the recovery pass
+  // trades the slow speed for actually being audible.
+  u.rate=safeMode?Math.max(0.6,LS.rate):LS.rate;
+  u.pitch=safeMode?1:LS.pitch;
   if(!LS.voices.length)lsLoadVoices();
-  const v=lsPickVoice();
+  const v=safeMode?null:lsPickVoice();
   if(v){u.voice=v;u.lang=v.lang}else{u.lang='en-US'}
-  u.onstart=()=>{if(my===LS.session)LS.lastBeat=Date.now()};
+  // If nothing starts speaking, the UI would otherwise sit there pretending
+  // to play. Retry once in safe mode, then say what to check.
+  LS.startWatch=setTimeout(()=>{
+    if(my!==LS.session||!LS.playing)return;
+    let speaking=false;
+    try{speaking=window.speechSynthesis.speaking}catch(e){}
+    if(speaking)return;
+    if(!safeMode){lsSpeak(true);return}
+    lsStop();
+    toast('音声を再生できませんでした。本体の音量、iPhoneの消音スイッチ、設定の「Voice」をご確認ください','err');
+  },2000);
+  u.onstart=()=>{if(my===LS.session){LS.lastBeat=Date.now();clearTimeout(LS.startWatch)}};
   u.onboundary=e=>{
     if(my!==LS.session)return;
     LS.lastBeat=Date.now();
@@ -1599,13 +1625,13 @@ function lsPlayFrom(i){
   lsSpeak();
 }
 function lsPause(){
-  LS.session++;clearTimeout(LS.gapTimer);LS.waiting=false;
+  LS.session++;clearTimeout(LS.gapTimer);clearTimeout(LS.startWatch);LS.waiting=false;
   try{window.speechSynthesis.cancel()}catch(e){}
   LS.playing=false;LS.paused=true;
   lsPlayIcon(false);lsWake(false);
 }
 function lsStop(){
-  LS.session++;clearTimeout(LS.gapTimer);LS.waiting=false;
+  LS.session++;clearTimeout(LS.gapTimer);clearTimeout(LS.startWatch);LS.waiting=false;
   try{window.speechSynthesis.cancel()}catch(e){}
   LS.playing=false;LS.paused=false;LS.idx=0;
   lsPlayIcon(false);lsClearHl();lsUpdPos();lsWake(false);
@@ -1622,8 +1648,56 @@ setInterval(()=>{
   }catch(e){}
 },1500);
 
+// iOS keeps speech locked until it has spoken once inside a real tap. Spend
+// the user's first tap on an inaudible utterance so the first real sentence
+// is not the one that gets swallowed.
+let _ttsUnlocked=false;
+function unlockTTS(){
+  if(_ttsUnlocked)return;
+  _ttsUnlocked=true;
+  try{
+    const u=new SpeechSynthesisUtterance(' ');
+    u.volume=0;u.rate=1;u.lang='en-US';
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+document.addEventListener('touchend',unlockTTS,{once:true,passive:true});
+document.addEventListener('click',unlockTTS,{once:true});
+
+// Lets the reader separate "the app is broken" from "the phone is muted"
+// without having to generate a lesson first.
+$('#btnVoiceTest').addEventListener('click',()=>{
+  haptic('med');unlockTTS();
+  const box=$('#voiceTestResult');
+  box.className='inline-ok';box.textContent='再生中…';
+  let started=false;
+  try{window.speechSynthesis.cancel()}catch(e){}
+  setTimeout(()=>{
+    const u=new SpeechSynthesisUtterance('This is a listening test. Can you hear my voice?');
+    u.rate=LS.rate;u.pitch=LS.pitch;
+    const v=lsPickVoice();
+    if(v){u.voice=v;u.lang=v.lang}else{u.lang='en-US'}
+    u.onstart=()=>{started=true};
+    u.onend=()=>{
+      box.className='inline-ok';
+      box.textContent=`✓ 再生しました（${v?v.name:'端末の標準音声'} / ${LS.rate.toFixed(2).replace(/0$/,'')}×）\n聞こえなかった場合は、本体の音量とiPhoneの消音スイッチをご確認ください。`;
+    };
+    u.onerror=e=>{
+      box.className='inline-alert';
+      box.textContent=`⚠ 再生できませんでした（${e.error||'原因不明'}）\n「Speed」を0.5×以上に上げるか、上の「Voice」で別の話者をお試しください。`;
+    };
+    try{window.speechSynthesis.speak(u)}catch(e){}
+    setTimeout(()=>{
+      if(started)return;
+      box.className='inline-alert';
+      box.textContent='⚠ 音声が始まりませんでした\n① 本体の音量を上げる\n② iPhoneの消音スイッチを解除する\n③ 「Speed」を0.5×以上に上げる\n④ 上の「Voice」で別の話者を選ぶ';
+    },2500);
+  },150);
+});
+
 $('#lsPlay').addEventListener('click',()=>{
   haptic('med');
+  unlockTTS();
   if(LS.playing)lsPause();
   else if(LS.paused)lsSpeak();
   else lsPlayFrom(0);
