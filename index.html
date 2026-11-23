@@ -488,6 +488,16 @@ a{color:var(--gold);font-weight:600}
   background:var(--gold-pale);border:1px solid var(--gold-soft);border-radius:2px;
   padding:11px 13px;font-size:11.5px;line-height:1.8;color:#6E5A32;margin-bottom:12px;
 }
+#setupBanner{
+  background:var(--navy-deep);border-radius:3px;position:relative;
+  padding:18px 16px 16px;margin-bottom:16px;
+  box-shadow:0 8px 24px rgba(22,32,58,.22);
+}
+#setupBanner::after{content:'';position:absolute;inset:5px;border:1px solid rgba(213,190,143,.22);border-radius:2px;pointer-events:none}
+.setup-k{font-size:8.5px;letter-spacing:.3em;color:var(--gold);font-weight:700;text-transform:uppercase;position:relative;z-index:1}
+.setup-t{font-family:var(--serif);font-size:19px;color:#F0EADA;letter-spacing:.06em;margin:3px 0 8px;position:relative;z-index:1}
+.setup-p{font-size:12px;line-height:1.85;color:#B9C0D4;margin-bottom:13px;position:relative;z-index:1}
+#setupBanner .btn{position:relative;z-index:1}
 /* Stays put in the flow (not a fading toast) so a failure is visible exactly
    where the reader is already looking — e.g. right under a Generate button. */
 .inline-alert{
@@ -546,6 +556,15 @@ a{color:var(--gold);font-weight:600}
 
   <!-- ============ TOPIC ============ -->
   <div class="tabpane on" id="pane-topic">
+    <!-- iOS clears site storage after a spell of not opening the app, which
+         takes the key with it. Say so on arrival instead of letting the next
+         button press fail. -->
+    <div id="setupBanner" class="hidden">
+      <div class="setup-k">Setup — 最初の1回だけ</div>
+      <div class="setup-t">AIキーの登録が必要です</div>
+      <p class="setup-p">AI機能（英文作成・添削・会話）を使うには、Googleの無料キーをこの端末に登録します。<br>しばらくアプリを開かないと、iPhone・iPadの仕様でキーが消えることがあります。その場合も同じ手順で戻せます。</p>
+      <button class="btn gold wide" id="btnSetupOpen">キーを登録する</button>
+    </div>
     <div class="sec">
       <div class="sec-kicker">Curriculum</div>
       <div class="sec-title">Topic &amp; Article</div>
@@ -941,13 +960,13 @@ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{
 },400)}
 
 /* ---------- Gemini API ---------- */
-const APP_VERSION='2026.09.10-13';
+const APP_VERSION='2026.11.23-14';
 // Google retires model ids on its own schedule, and a retired id 404s for
 // newly-created keys well before the published shutdown date. So these are
 // only starting points: discoverModels() asks the key what it can actually
 // reach and rewrites them, and gem() self-heals on a 404. Without that, the
 // app breaks for the user with no way for them to fix it.
-const TXT_MODEL_DEFAULT='gemini-3.6-flash';
+const TXT_MODEL_DEFAULT='gemini-3.8-flash';
 const IMG_MODEL_DEFAULT='gemini-3.1-flash-image';
 // Never hand back a model already known to be unusable — including the
 // built-in default, which is otherwise the one place a block can't reach.
@@ -979,12 +998,26 @@ function modelRank(name){
 function imageRank(name){
   return modelRank(name)-(/pro/i.test(name)?150:0);
 }
-// A model whose free quota is 0 will never work on this plan, so waiting is
-// pointless — remember it and stop offering it.
-function blockedModels(){try{return JSON.parse(store.get('pe_blocked','[]'))}catch(e){return[]}}
+// A model whose free quota is 0 will not work on this plan, so stop offering
+// it — but only for a while. Google changes free-tier terms, and a quota
+// reading can be wrong in the moment; a permanent block turned a passing
+// glitch into an app that never worked again on that device, with nothing on
+// screen to explain why. Entries carry a timestamp and lapse; legacy
+// timestamp-less entries are dropped on sight.
+const BLOCK_TTL=3*24*60*60*1000;
+function blockEntries(){
+  try{
+    const now=Date.now();
+    return JSON.parse(store.get('pe_blocked','[]'))
+      .filter(e=>e&&typeof e==='object'&&e.n&&now-(e.at||0)<BLOCK_TTL);
+  }catch(e){return[]}
+}
+function blockedModels(){return blockEntries().map(e=>e.n)}
 function blockModel(n){
-  const b=blockedModels();
-  if(n&&!b.includes(n)){b.push(n);store.set('pe_blocked',JSON.stringify(b))}
+  if(!n)return;
+  const keep=blockEntries().filter(e=>e.n!==n);
+  keep.push({n,at:Date.now()});
+  store.set('pe_blocked',JSON.stringify(keep));
   _rankedText=_rankedText.filter(x=>x!==n);
   _rankedImage=_rankedImage.filter(x=>x!==n);
   if(store.get('pe_txt_model','')===n)store.del('pe_txt_model');
@@ -1074,7 +1107,10 @@ async function gem({prompt,system,history,json=false,model=null}){
       if(nx){m=nx;busyTries=0;continue}
     }
     if(res.status===400||res.status===401||res.status===403)
-      throw new Error(`APIキーをご確認ください（エラー${res.status}）${res.detail?'\n詳細: '+res.detail:''}`);
+      // A rejected key is usually dead rather than mistyped — Google blocks
+      // keys left unused — and no amount of re-checking revives one, so point
+      // straight at making a new one.
+      throw new Error(`APIキーが使えませんでした（エラー${res.status}）\n⚙設定 →「接続テスト」で詳しい原因が出ます。キーが無効なら、aistudio.google.com/apikey で新しいキーを作って保存し直してください。${res.detail?'\n詳細: '+res.detail:''}`);
     break;
   }
   if(last?.status===429&&isNoFreeQuota(last.detail))
@@ -1909,7 +1945,12 @@ function refreshKeyStatus(){
     ?`✓ 保存済み（…${esc(k.slice(-4))}）— AI機能が使えます`
     :'キーは未設定です。上の手順で無料キーを作成してください。';
   $('#verStamp').textContent='Peak English '+APP_VERSION;
+  syncSetupBanner();
 }
+function syncSetupBanner(){
+  const b=$('#setupBanner');if(b)b.classList.toggle('hidden',!!apiKey());
+}
+$('#btnSetupOpen').addEventListener('click',()=>{haptic('med');refreshKeyStatus();openModal('settingsModal')});
 // One-tap self-diagnosis: makes the smallest possible real request and reports
 // exactly what came back, so a failure can be understood without dev tools.
 $('#btnTestConn').addEventListener('click',async()=>{
@@ -1994,6 +2035,7 @@ function initFields(){
   $('#diaryInput').value=S.diaryInput;
   renderLevelChips();renderSpLevel();renderRpLevel();renderModeChips();
   renderTopics();renderArticle();renderComic();renderPrep();renderWrite();
+  syncSetupBanner();
   $('#amRate').value=LS.rate;$('#amRateVal').textContent=LS.rate.toFixed(2).replace(/0$/,'')+'×';
   $('#amGap').value=LS.gap;$('#amGapVal').textContent=LS.gap.toFixed(2).replace(/\.?0+$/,'')+'s';
   $('#lsGapDisp').textContent=LS.gap.toFixed(1)+'s';
@@ -2015,7 +2057,9 @@ if('serviceWorker'in navigator&&location.protocol==='https:'){
   window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
 }
 initFields();
-switchTab(store.get('pe_tab','topic'));
+// The setup notice lives on Topic, so a missing key has to land there —
+// otherwise reopening on Listen looks like an app that simply stopped working.
+switchTab(apiKey()?store.get('pe_tab','topic'):'topic');
 </script>
 </body>
 </html>
